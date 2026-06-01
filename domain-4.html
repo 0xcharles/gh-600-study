@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 4: Evaluation, Error Analysis, and Tuning — GH-600 Study</title>
+<meta name="description" content="Domain 4 lesson page for GH-600: Evaluation, Error Analysis, and Tuning — instructor-style guide with evaluation feedback loop SVG, root cause analysis table, and exam-focused tuning strategies">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html" class="active">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 4 · Weight: 15-20%</div>
+  <h1>Evaluation, Error Analysis,<br>&amp; Tuning</h1>
+  <p>You've built your agent. Now how do you know if it's working? Domain 4 is about the <strong>feedback cycle</strong> — defining success criteria, detecting failures, diagnosing root causes, and iteratively tuning agent behavior. This is where theory meets practice on the exam.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: The Evaluation Mindset                            -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. The Evaluation Mindset</h2>
+    <p>Welcome to Domain 4. If Domain 3 was about how agents <em>remember</em>, Domain 4 is about how agents <em>improve</em>. The core loop is simple: <strong>Define criteria → Execute → Measure → Analyze → Tune → Repeat</strong>. This is the <strong>Plan-Act-Evaluate (PAE)</strong> cycle that underpins all agentic systems, and the exam expects you to understand every step.</p>
+    <p>In this lesson, I'll teach you:</p>
+    <ul>
+      <li>How to define meaningful success criteria that an agent or CI pipeline can verify</li>
+      <li>Which automated scanning tools are available and what each one detects</li>
+      <li>How to do root cause analysis when an agent fails — with a structured decision framework</li>
+      <li>The four tuning levers: instructions, tools, environment, and MCP</li>
+      <li>How session logs, workflow artifacts, and PR reviews serve as evaluation methods</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — Evaluation Is Not Optional:</strong> The exam treats evaluation as a <strong>first-class concern</strong>, not an afterthought. Every agent workflow should have explicit evaluation checkpoints. If a question presents an agent workflow without any evaluation step, the implied correct answer is always: <em>"add an evaluation gate."</em> This is similar to how you'd never deploy code without tests — you should never deploy an agent configuration without evaluation.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Evaluation Feedback Loop Diagram                  -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. The Evaluation Feedback Loop</h2>
+    <p>Here's the core mental model for Domain 4. The evaluation feedback loop shows how agent output flows through measurement, analysis, and tuning back into the agent:</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evaluation feedback loop diagram">
+        <defs>
+          <linearGradient id="bgD4" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f5f3ff" />
+            <stop offset="100%" stop-color="#ede9fe" />
+          </linearGradient>
+          <linearGradient id="defineGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#3b82f6" />
+          </linearGradient>
+          <linearGradient id="executeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#fbbf24" />
+          </linearGradient>
+          <linearGradient id="measureGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed" />
+            <stop offset="100%" stop-color="#8b5cf6" />
+          </linearGradient>
+          <linearGradient id="analyzeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#dc2626" />
+            <stop offset="100%" stop-color="#ef4444" />
+          </linearGradient>
+          <linearGradient id="tuneGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+          <filter id="shadowD4">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".15" />
+          </filter>
+          <marker id="arrowD4" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+            <polygon points="0 0, 12 4, 0 8" fill="#7c3aed"/>
+          </marker>
+          <marker id="arrowD4green" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+            <polygon points="0 0, 12 4, 0 8" fill="#059669"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="400" rx="10" fill="url(#bgD4)" />
+
+        <!-- Title -->
+        <text x="380" y="30" text-anchor="middle" fill="#4c1d95" font-size="15" font-weight="800" font-family="Inter,sans-serif">Plan-Act-Evaluate (PAE) Feedback Loop</text>
+
+        <!-- Center: Agent -->
+        <ellipse cx="380" cy="200" rx="80" ry="40" fill="url(#defineGrad)" filter="url(#shadowD4)" />
+        <text x="380" y="198" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">🤖 Agent</text>
+        <text x="380" y="215" text-anchor="middle" fill="#dbeafe" font-size="10" font-family="Inter,sans-serif">(with instructions + tools)</text>
+
+        <!-- Top: Define Success Criteria -->
+        <rect x="290" y="55" width="180" height="50" rx="10" fill="url(#defineGrad)" filter="url(#shadowD4)" />
+        <text x="380" y="78" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🎯 Define Success Criteria</text>
+        <text x="380" y="95" text-anchor="middle" fill="#dbeafe" font-size="9" font-family="Inter,sans-serif">What does "good" look like?</text>
+
+        <!-- Arrow: Define -> Agent -->
+        <line x1="380" y1="105" x2="380" y2="155" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowD4)" />
+
+        <!-- Right: Execute -->
+        <rect x="530" y="165" width="180" height="50" rx="10" fill="url(#executeGrad)" filter="url(#shadowD4)" />
+        <text x="620" y="188" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">⚡ Execute Action</text>
+        <text x="620" y="205" text-anchor="middle" fill="#fef3c7" font-size="9" font-family="Inter,sans-serif">Agent performs the task</text>
+
+        <!-- Arrow: Agent -> Execute -->
+        <line x1="460" y1="190" x2="525" y2="190" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowD4)" />
+
+        <!-- Bottom: Measure -->
+        <rect x="530" y="280" width="180" height="50" rx="10" fill="url(#measureGrad)" filter="url(#shadowD4)" />
+        <text x="620" y="303" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">📊 Measure Results</text>
+        <text x="620" y="320" text-anchor="middle" fill="#e9d5ff" font-size="9" font-family="Inter,sans-serif">Collect outcomes + signals</text>
+
+        <!-- Arrow: Execute -> Measure -->
+        <line x1="620" y1="215" x2="620" y2="275" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowD4)" />
+
+        <!-- Left: Analyze -->
+        <rect x="50" y="280" width="180" height="50" rx="10" fill="url(#analyzeGrad)" filter="url(#shadowD4)" />
+        <text x="140" y="303" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🔍 Analyze &amp; Diagnose</text>
+        <text x="140" y="320" text-anchor="middle" fill="#fecaca" font-size="9" font-family="Inter,sans-serif">Find root cause of failures</text>
+
+        <!-- Arrow: Measure -> Analyze (bottom loop) -->
+        <line x1="530" y1="305" x2="235" y2="305" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowD4)" />
+
+        <!-- Arrow: Analyze -> Tune (up left) -->
+        <line x1="140" y1="280" x2="140" y2="120" stroke="#059669" stroke-width="3" marker-end="url(#arrowD4green)" />
+
+        <!-- Left top: Tune -->
+        <rect x="50" y="70" width="180" height="50" rx="10" fill="url(#tuneGrad)" filter="url(#shadowD4)" />
+        <text x="140" y="93" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🔧 Tune Agent</text>
+        <text x="140" y="110" text-anchor="middle" fill="#d1fae5" font-size="9" font-family="Inter,sans-serif">Instructions · Tools · Env · MCP</text>
+
+        <!-- Arrow: Tune -> Agent -->
+        <line x1="230" y1="95" x2="295" y2="160" stroke="#059669" stroke-width="3" marker-end="url(#arrowD4green)" />
+
+        <!-- Labels for loop direction -->
+        <text x="380" y="270" text-anchor="middle" fill="#7c3aed" font-size="10" font-weight="700" font-family="Inter,sans-serif">↑ Output flows to measurement</text>
+        <text x="380" y="340" text-anchor="middle" fill="#7c3aed" font-size="10" font-weight="700" font-family="Inter,sans-serif">← Results feed analysis →</text>
+
+        <!-- Small check/diagnosis markers -->
+        <text x="380" y="370" text-anchor="middle" fill="#64748b" font-size="10" font-family="Inter,sans-serif">The loop repeats — each iteration improves agent quality</text>
+      </svg>
+      <div class="diagram-caption">Figure 4.1 — The Evaluation Feedback Loop: Define criteria → Execute → Measure results → Analyze root causes → Tune the agent → Repeat. This is the Plan-Act-Evaluate cycle in visual form.</div>
+    </div>
+
+    <p>The exam frames every evaluation question within this loop. If you're asked about a failure, trace backward: was the <strong>criteria</strong> poorly defined? Was the <strong>measurement</strong> incomplete? Was the <strong>analysis</strong> wrong? The answer will point to one of these stages.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Success Criteria and Evaluation Signals           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Defining Success Criteria and Evaluation Signals</h2>
+    <p>Every agent task needs explicit success criteria <strong>before</strong> the agent starts. The exam distinguishes between <strong>weak</strong> and <strong>strong</strong> evaluation signals.</p>
+
+    <h3>Weak vs Strong Signals</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>Example</th>
+          <th>Problem</th>
+        </tr>
+        <tr>
+          <td>❌ Weak</td>
+          <td>"The PR looks good"</td>
+          <td>Subjective, unmeasurable, depends on reviewer opinion</td>
+        </tr>
+        <tr>
+          <td>❌ Weak</td>
+          <td>"Tests pass"</td>
+          <td>Tests could be incomplete or not cover the agent's changes</td>
+        </tr>
+        <tr>
+          <td>✅ Strong</td>
+          <td>"All existing + new tests pass; coverage ≥ 80%; no lint warnings"</td>
+          <td>Quantitative, verifiable, multi-dimensional</td>
+        </tr>
+        <tr>
+          <td>✅ Strong</td>
+          <td>"PR has exactly 3 files changed (2 source + 1 test); all status checks green"</td>
+          <td>Scope-bound, automated, specific</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Evaluation Signal Types</h3>
+    <p>The exam defines several categories of evaluation signals:</p>
+    <ul>
+      <li><strong>Functional signals:</strong> Does the output do what it's supposed to? (Tests pass, code compiles, API returns expected status)</li>
+      <li><strong>Quality signals:</strong> Is the output well-made? (Code coverage, lint score, performance benchmarks, accessibility checks)</li>
+      <li><strong>Compliance signals:</strong> Does the output follow governance rules? (No secrets committed, follows team conventions, meets security policies)</li>
+      <li><strong>Process signals:</strong> Was the workflow followed correctly? (Plan was reviewed, approvals obtained, audit trail complete)</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The "So What?" Test:</strong> For every success criterion you define, ask: <em>"If this criterion passes, does that actually mean the agent succeeded?"</em> If "tests pass" is your only criterion, the agent could delete all tests (making them pass vacuously) or write trivial tests that assert nothing. Strong criteria are <strong>specific, quantitative, and hard to game</strong>.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Automated Scanning Tools                          -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. Automated Scanning Tools for Evaluation</h2>
+    <p>GitHub provides several automated scanning tools that serve as evaluation signals for agent outputs. The exam expects you to know what each tool does and when to use it.</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Tool</th>
+          <th>What It Scans</th>
+          <th>What It Detects</th>
+          <th>Trigger</th>
+        </tr>
+        <tr>
+          <td><strong>CodeQL</strong></td>
+          <td>Source code (all pushed branches and PRs)</td>
+          <td>Security vulnerabilities, code quality issues, logic errors, injection flaws, XSS, SQLi, path traversal</td>
+          <td>CI workflow or push/PR trigger in <code>.github/workflows/codeql.yml</code></td>
+        </tr>
+        <tr>
+          <td><strong>Dependabot</strong></td>
+          <td>Dependency manifests (<code>package.json</code>, <code>requirements.txt</code>, <code>Gemfile</code>, etc.)</td>
+          <td>Known vulnerabilities in dependencies (CVEs), outdated packages, version incompatibilities</td>
+          <td>Automated — scans on push and on schedule; auto-creates PRs for fixes</td>
+        </tr>
+        <tr>
+          <td><strong>Secret Scanning</strong></td>
+          <td>All repository content (commits, PRs, issues, descriptions)</td>
+          <td>Hard-coded secrets: API keys, tokens, passwords, certificates, private keys, connection strings</td>
+          <td>Real-time — detects on push; alerts security team; can block push with push protection</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>How These Fit Into Evaluation</h3>
+    <p>Each tool produces <strong>evaluation signals</strong> that answer specific questions about agent output:</p>
+    <ul>
+      <li><strong>CodeQL</strong> answers: "Did the agent introduce any security vulnerabilities?"</li>
+      <li><strong>Dependabot</strong> answers: "Did the agent introduce any vulnerable dependencies?"</li>
+      <li><strong>Secret Scanning</strong> answers: "Did the agent accidentally expose any credentials?"</li>
+    </ul>
+    <p>These tools should be part of every agent workflow as <strong>automated evaluation gates</strong>. If a PR from an agent triggers a CodeQL alert, the evaluation fails — the agent must fix the issue before the PR can merge.</p>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> The exam will test whether you know which scanning tool to use for a given scenario. If the scenario mentions a <strong>vulnerable library</strong> → that's <strong>Dependabot</strong>. If it mentions <strong>hard-coded API keys</strong> → that's <strong>Secret Scanning</strong>. If it mentions <strong>SQL injection in custom code</strong> → that's <strong>CodeQL</strong>. Don't confuse them — each tool has a distinct purpose.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Root Cause Analysis Table                         -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. Root Cause Analysis: Symptom → Root Cause → Fix</h2>
+    <p>When an agent fails, the exam expects you to trace the failure from symptom back to root cause, then choose the appropriate fix. Here's the structured decision framework:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Symptom</th>
+          <th>Likely Root Cause</th>
+          <th>Fix</th>
+        </tr>
+        <tr>
+          <td>Agent produces incorrect code (wrong logic, wrong API calls)</td>
+          <td><strong>Instructions too vague</strong> — agent lacks specific behavioral guidelines for the task</td>
+          <td>Add detailed task-specific instructions in <code>.github/instructions/*.instructions.md</code> or improve the prompt template</td>
+        </tr>
+        <tr>
+          <td>Agent can't find the right files or functions</td>
+          <td><strong>Missing context or search scope too narrow</strong> — agent doesn't know the codebase structure</td>
+          <td>Provide file path hints, expand <code>search</code> scope, or add Copilot Memory entries with key file locations</td>
+        </tr>
+        <tr>
+          <td>Agent tries to use a tool it doesn't have access to</td>
+          <td><strong>Tool misconfiguration in agent profile</strong> — the <code>tools</code> list in <code>.github/agents/*.agent.md</code> doesn't include the required tool</td>
+          <td>Add the missing tool to the agent's profile's <code>tools</code> list, or reassign the task to an agent with the right permissions</td>
+        </tr>
+        <tr>
+          <td>Agent's MCP calls fail</td>
+          <td><strong>MCP server misconfiguration</strong> — server not defined in <code>.mcp.json</code>, wrong host/port, or authentication issues</td>
+          <td>Verify MCP server config in <code>.mcp.json</code> or <code>.github/mcp.json</code>, check server is running and reachable</td>
+        </tr>
+        <tr>
+          <td>Agent makes changes to wrong files or scope</td>
+          <td><strong>Context drift or insufficient scoping</strong> — agent's mental model of which files are in scope is wrong</td>
+          <td>Re-read files before editing; add explicit scope constraints to task instructions; use file path patterns in tool config</td>
+        </tr>
+        <tr>
+          <td>Agent's PR gets rejected in review</td>
+          <td><strong>Poor output quality</strong> — agent didn't follow team conventions, missing tests, no documentation</td>
+          <td>Add PR template requirements; include quality checks in the evaluation criteria; tune agent instructions for the expected output format</td>
+        </tr>
+        <tr>
+          <td>Agent silently fails (no output, no error)</td>
+          <td><strong>No error handling or logging</strong> — agent encounters an error but doesn't surface it</td>
+          <td>Implement error handling in the agent workflow; configure hooks at <code>.github/hooks/*.json</code> for lifecycle monitoring; add logging and alerting</td>
+        </tr>
+        <tr>
+          <td>Agent keeps repeating the same mistake</td>
+          <td><strong>Insufficient feedback loop</strong> — evaluation signals are too weak or don't reach the agent's tuning mechanism</td>
+          <td>Strengthen evaluation criteria; add automated scanning gates; implement a formal iterative tuning process (PAE loop)</td>
+        </tr>
+        <tr>
+          <td>Agent's output violates security policies</td>
+          <td><strong>Lack of guardrails or insufficient autonomy level</strong> — agent has too much freedom without governance</td>
+          <td>Reduce autonomy level; add CodeQL/Secret Scanning gates; enforce branch protection rules; add human review requirement</td>
+        </tr>
+        <tr>
+          <td>Agent uses the wrong tool for the task</td>
+          <td><strong>Autonomy mismatch or misconfigured least privilege</strong> — agent tool set doesn't match the task requirements</td>
+          <td>Audit the agent's <code>tools</code> list; apply least-privilege principle; add tool-use instructions in the agent profile or prompt</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — The Diagnosis Tree:</strong> When the exam presents a failure scenario, always start by asking: <em>"Is the agent's configuration correct?"</em> If yes, ask: <em>"Are the instructions complete enough?"</em> If yes, ask: <em>"Is the evaluation catching the right signals?"</em> Work through this tree — the exam's wrong answers typically skip a level and go directly to a complicated fix when the real fix is simple configuration.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: The Four Tuning Levers                            -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. The Four Tuning Levers: Instructions, Tools, Environment, MCP</h2>
+    <p>When evaluation reveals that an agent isn't performing as expected, you have <strong>four tuning levers</strong> to adjust. The exam expects you to know which lever to use for each type of problem.</p>
+
+    <h3>Lever 1: Instructions</h3>
+    <p><strong>What it controls:</strong> The agent's understanding of what to do and how to behave.</p>
+    <p><strong>When to adjust:</strong> When the agent produces incorrect or low-quality output because it doesn't have enough context, doesn't understand the expected output format, or follows wrong conventions.</p>
+    <p><strong>How to adjust:</strong></p>
+    <ul>
+      <li>Update <code>.github/copilot-instructions.md</code> for repo-wide behavior</li>
+      <li>Create or modify <code>.github/instructions/*.instructions.md</code> for task-specific guidance</li>
+      <li>Improve prompt templates in <code>.github/prompts/*.prompt.md</code></li>
+      <li>Add explicit examples of desired output (few-shot prompting)</li>
+    </ul>
+
+    <h3>Lever 2: Tools</h3>
+    <p><strong>What it controls:</strong> Which actions the agent is allowed to take.</p>
+    <p><strong>When to adjust:</strong> When the agent tries to use tools it doesn't have, or when it has tools it shouldn't use (privilege creep). Also when the agent's tool permissions don't match the task's requirements.</p>
+    <p><strong>How to adjust:</strong></p>
+    <ul>
+      <li>Update the <code>tools</code> list in <code>.github/agents/*.agent.md</code></li>
+      <li>Add tool-specific constraints (restricted commands, allowed directories)</li>
+      <li>Enable or disable the <code>web</code> tool for external HTTP access</li>
+      <li>Add or remove the <code>agent</code> tool for sub-agent delegation</li>
+    </ul>
+
+    <h3>Lever 3: Environment</h3>
+    <p><strong>What it controls:</strong> The execution context where the agent runs — including secrets, environment variables, runtime versions, and workspace layout.</p>
+    <p><strong>When to adjust:</strong> When the agent fails due to missing dependencies, wrong runtime versions, missing authentication tokens, or incorrect workspace setup.</p>
+    <p><strong>How to adjust:</strong></p>
+    <ul>
+      <li>Configure <code>.github/workflows/copilot-setup-steps.yml</code> for CI environment</li>
+      <li>Set environment variables and secrets in GitHub Actions or Codespaces config</li>
+      <li>Define <code>target</code> in the agent profile (e.g., <code>github-actions</code>, <code>codespaces</code>, <code>cli</code>)</li>
+      <li>Configure environment protection rules for deployment gates</li>
+    </ul>
+
+    <h3>Lever 4: MCP</h3>
+    <p><strong>What it controls:</strong> Which external services the agent can access via the Model Context Protocol.</p>
+    <p><strong>When to adjust:</strong> When the agent needs access to external data sources, APIs, or specialized services that aren't available through its built-in tools.</p>
+    <p><strong>How to adjust:</strong></p>
+    <ul>
+      <li>Add or modify MCP server definitions in <code>.mcp.json</code>, <code>.github/mcp.json</code>, or <code>.vscode/mcp.json</code></li>
+      <li>Add MCP server names to the agent profile's <code>mcp-servers</code> list</li>
+      <li>Configure the <strong>MCP allow list</strong> for security control</li>
+      <li>Register custom MCP servers in the <strong>MCP registry</strong></li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The Lever Priority:</strong> Start with instructions (cheapest, lowest risk), then tools (still low risk), then environment (medium risk), then MCP (highest risk, widest blast radius). The exam will test whether you choose the <strong>minimal effective change</strong>. Don't reconfigure MCP servers when a better instruction file would fix the problem.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: Evaluation Methods: Logs, Artifacts, PR Review   -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. Evaluation Methods: Session Logs, Workflow Artifacts, PR Reviews</h2>
+    <p>Beyond automated scanning tools, the exam recognizes three primary methods for evaluating agent performance. Each provides different signals at different stages of the agent workflow.</p>
+
+    <h3>Session Logs</h3>
+    <p>Session logs capture the complete record of an agent's interaction: every prompt, every tool call, every output, every error. They are the <strong>ground truth</strong> for understanding what the agent did and why.</p>
+    <ul>
+      <li><strong>Use for:</strong> Post-mortem analysis, debugging failures, auditing agent decisions</li>
+      <li><strong>Contains:</strong> Timestamped sequence of events, tool inputs and outputs, model responses, error messages</li>
+      <li><strong>Storage:</strong> GitHub Actions workflow logs (90-day retention), local log files, or external log aggregation</li>
+      <li><strong>Exam tip:</strong> If an agent produces unexpected output, the first diagnostic step is always: <em>check the session logs</em></li>
+    </ul>
+
+    <h3>Workflow Artifacts</h3>
+    <p>Workflow artifacts are the <strong>persistent outputs</strong> generated during agent execution — test reports, coverage summaries, build outputs, scanned file lists, generated documentation.</p>
+    <ul>
+      <li><strong>Use for:</strong> Verifying that the agent's output meets quality and completeness criteria</li>
+      <li><strong>Contains:</strong> Build artifacts, test results, coverage reports, lint output, security scan results</li>
+      <li><strong>Storage:</strong> GitHub Actions artifact storage, committed files in the repository, or external blob storage</li>
+      <li><strong>Exam tip:</strong> Workflow artifacts serve as <strong>durable evidence</strong> that evaluation happened — they can be inspected by humans or other agents later</li>
+    </ul>
+
+    <h3>PR Review</h3>
+    <p>PR review is the <strong>human evaluation gate</strong>. It's the final check before an agent's changes enter the main codebase.</p>
+    <ul>
+      <li><strong>Use for:</strong> Catching issues that automated tools miss (design concerns, code clarity, business logic correctness)</li>
+      <li><strong>Mechanism:</strong> Required reviewers (CODEOWNERS), review approval requirements, PR templates, change request workflows</li>
+      <li><strong>Integration:</strong> PR review is the bridge between automated evaluation and human judgment</li>
+      <li><strong>Exam tip:</strong> PR review is not a substitute for automated evaluation — it's a <strong>complement</strong>. Automated checks run first; humans review the results and make the final call</li>
+    </ul>
+
+    <div class="code-block"># Evaluation workflow: Combining all three methods
+
+name: Agent Evaluation
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  # 1. Automated scanning (CodeQL, Dependabot, Secret Scanning)
+  security-scan:
+    uses: ./.github/workflows/security-scan.yml
+
+  # 2. Build and test (produces workflow artifacts)
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm test -- --coverage
+      - run: npm run lint
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: coverage/
+
+  # 3. Session logs are automatically captured by GitHub Actions
+
+  # 4. Human PR review is required by branch protection rules</div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> A question might ask: "What's the best evaluation method for catching business logic errors?" The answer is <strong>PR review</strong>, not CodeQL or Dependabot. Automated tools catch <em>technical</em> errors (vulnerabilities, CVEs, secrets). Only a human reviewer can catch <em>business logic</em> errors — an agent might produce perfectly valid code that does the wrong thing. Know the boundary between automated and human evaluation.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Tuning Workflow Example                           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Putting It All Together: A Tuning Workflow</h2>
+    <p>Here's a complete example of how the PAE loop works in practice. The agent fails evaluation, we analyze the root cause, apply a tuning change, and re-evaluate:</p>
+
+    <div class="code-block"># Scenario: Agent generates test files without assertions
+
+# Step 1: Define success criteria
+# Criteria: Every generated test file must have at least one assertion
+# Measurement: Count assertions per test file via AST analysis
+
+# Step 2: Agent executes → generates empty test files → FAIL
+
+# Step 3: Analyze root cause
+# Symptom: Tests missing assertions
+# Root cause: Instructions don't specify assertion requirements
+# Correction: Add assertion requirement to instructions
+
+# Step 4: Apply tuning change
+# File: .github/instructions/test-generation.instructions.md
+# Before:
+#   "Generate unit tests for the given functions."
+# After:
+#   "Generate unit tests for the given functions.
+#    Each test file MUST include assertions using assert() or expect().
+#    Every test function must have at least one assertion.
+#    Include edge case tests (empty input, null, boundary values)."
+
+# Step 5: Re-run evaluation
+# Agent regenerates tests → assertions present → PASS
+
+# Step 6: Document the lesson learned
+# Add to .github/copilot-instructions.md:
+#   "All agent-generated test files must contain assertions.
+#    Validation: Automated assertion-count check runs after test generation."</div>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — The Iteration Mindset:</strong> The exam wants to see that you understand evaluation as a <strong>continuous process</strong>, not a one-time check. Each evaluation cycle produces insights that feed into the next cycle. Over time, your instructions get better, your tool configurations get tighter, and your evaluation signals get stronger. This is the <strong>Plan-Act-Evaluate</strong> loop operating at the meta level — evaluating your evaluation.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 9: Domain 4 Quick Reference                          -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>9. Domain 4 Quick Reference</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Concept</th>
+          <th>Key Detail</th>
+          <th>Exam Tip</th>
+        </tr>
+        <tr>
+          <td>Plan-Act-Evaluate (PAE)</td>
+          <td>Core feedback loop for all agent systems</td>
+          <td>Every question traces back to one stage of this loop</td>
+        </tr>
+        <tr>
+          <td>Strong vs Weak Signals</td>
+          <td>Strong = quantitative, verifiable, hard to game</td>
+          <td>Always choose the most specific, measurable criterion</td>
+        </tr>
+        <tr>
+          <td>CodeQL</td>
+          <td>Detects security vulns in custom code</td>
+          <td>SQL injection, XSS, path traversal → CodeQL</td>
+        </tr>
+        <tr>
+          <td>Dependabot</td>
+          <td>Detects CVEs in dependencies</td>
+          <td>Vulnerable package/library → Dependabot</td>
+        </tr>
+        <tr>
+          <td>Secret Scanning</td>
+          <td>Detects hard-coded secrets</td>
+          <td>API key, token, password in code → Secret Scanning</td>
+        </tr>
+        <tr>
+          <td>Four Tuning Levers</td>
+          <td>Instructions → Tools → Environment → MCP</td>
+          <td>Start with the cheapest, least risky lever first</td>
+        </tr>
+        <tr>
+          <td>Root Cause Analysis</td>
+          <td>Symptom → Root Cause → Fix framework</td>
+          <td>Trace symptom back to config, instructions, or tools</td>
+        </tr>
+        <tr>
+          <td>Evaluation Methods</td>
+          <td>Session logs (debugging), Artifacts (evidence), PR Review (human gate)</td>
+          <td>Business logic errors → PR Review (not automated tools)</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="domain-3.html">&larr; D3: Memory &amp; State</a>
+    <a href="domain-5.html">D5: Multi-Agent &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 4 · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+</body>
+</html>

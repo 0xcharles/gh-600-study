@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GH-600 Resources &amp; References — GH-600 Study</title>
+<meta name="description" content="Curated catalog of all GH-600 study resources — official Microsoft Learn modules, GitHub Docs, community study materials, video series, practice exams, registration info, and discount codes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .resource-section{margin-bottom:40px}
+  .resource-section h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;padding-bottom:8px;border-bottom:2px solid var(--primary-light)}
+  .resource-section .subtitle{font-size:13px;color:var(--text-secondary);margin-bottom:14px}
+  .resource-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:10px;transition:all .2s}
+  .resource-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md)}
+  .resource-card h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px}
+  .resource-card .meta{font-size:12px;color:var(--text-secondary);margin-bottom:6px;display:flex;flex-wrap:wrap;gap:6px}
+  .resource-card .meta .tag{display:inline-block;background:var(--primary-light);color:var(--primary);padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .resource-card .meta .tag.video{background:#fef3c7;color:#d97706}
+  .resource-card .meta .tag.community{background:#d1fae5;color:#059669}
+  .resource-card .meta .tag.offical{background:#ede9fe;color:#7c3aed}
+  .resource-card .meta .tag.discount{background:#fee2e2;color:#dc2626}
+  .resource-card p{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:6px}
+  .resource-card .links{font-size:12px}
+  .resource-card .links a{margin-right:12px}
+  @media(max-width:640px){
+    .resource-card{padding:14px 16px}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html" class="active">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">📚 Curated Study Resources</div>
+  <h1>GH-600 Resources<br>&amp; References</h1>
+  <p>A comprehensive catalog of <strong>all community-recommended study materials</strong> for the GH-600 exam. Every resource has been vetted by the community — official modules, documentation, study guides, videos, and practice exams in one place.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Official Microsoft Learn Modules                   -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>📖 1. Official Microsoft Learn Modules</h2>
+    <p class="subtitle">These six modules form the official learning path for GH-600. Every exam question maps to content in these modules. <strong>Start here.</strong></p>
+
+    <div class="resource-card">
+      <h4>Foundations of Agentic AI in GitHub</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">All domains</span>
+      </div>
+      <p>Introductory module covering what agentic AI means in the GitHub ecosystem. Defines core concepts: agents, tools, MCP, Copilot, and the GitHub control plane. Prerequisite reading before diving into individual domains.</p>
+      <p><strong>Good for:</strong> Building foundational vocabulary and understanding the big picture before studying individual domains.</p>
+      <div class="links"><a href="https://aka.ms/AA11551d" target="_blank">aka.ms/AA11551d</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Designing Agent Architecture and SDLC Integration</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">Domain 1</span>
+      </div>
+      <p>Deep dive into agent architecture patterns, SDLC integration points, planning vs execution boundaries, and observability setup. Maps directly to Domain 1 of the exam.</p>
+      <p><strong>Good for:</strong> Understanding agent architecture patterns, SDLC integration, and planning/execution separation.</p>
+      <div class="links"><a href="https://aka.ms/AA11551g" target="_blank">aka.ms/AA11551g</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Tooling, MCP, and Agent Execution Environments</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">Domain 2</span>
+      </div>
+      <p>Covers the full tool ecosystem: built-in tools, MCP servers, CI integration, safe execution paths, and error handling. This is the heaviest domain (20-25%).</p>
+      <p><strong>Good for:</strong> Everything tool-related — tool selection, MCP configuration, execution environments, error handling.</p>
+      <div class="links"><a href="https://aka.ms/AA11551m" target="_blank">aka.ms/AA11551m</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Memory, State, and Evaluation</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">Domains 3 &amp; 4</span>
+      </div>
+      <p>Two domains in one module: managing agent memory/state (Domain 3) and performing evaluation, error analysis, and tuning (Domain 4). Covers Copilot Memory, context management, and the PAE loop.</p>
+      <p><strong>Good for:</strong> Understanding memory strategies, state management, evaluation criteria, and tuning levers.</p>
+      <div class="links"><a href="https://aka.ms/AA114xam" target="_blank">aka.ms/AA114xam</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Multi-Agent Systems and Orchestration</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">Domain 5</span>
+      </div>
+      <p>Everything about multi-agent coordination: SDLC role separation, orchestration patterns (hierarchical, sequential, parallel, competitive), agent isolation, conflict detection, and failure recovery at scale.</p>
+      <p><strong>Good for:</strong> Multi-agent design patterns, orchestration strategies, isolation mechanisms, and system observability.</p>
+      <div class="links"><a href="https://aka.ms/AA114xao" target="_blank">aka.ms/AA114xao</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Governance, Guardrails, and Operations</h4>
+      <div class="meta">
+        <span class="tag offical">Module</span>
+        <span class="tag">Domain 6</span>
+      </div>
+      <p>Risk-based autonomy, GitHub-native controls (rulesets, checks, CODEOWNERS, environments), human-in-the-loop workflows, least-privilege permissions, and governance maintenance. The safety and control module.</p>
+      <p><strong>Good for:</strong> Understanding governance frameworks, guardrail configuration, human-in-the-loop design, and auditability.</p>
+      <div class="links"><a href="https://aka.ms/AA114xaq" target="_blank">aka.ms/AA114xaq</a></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: GitHub Documentation                              -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>📘 2. GitHub Documentation</h2>
+    <p class="subtitle">Official GitHub Docs pages that cover agentic AI features in depth. Essential for understanding the implementation details the exam tests.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h4>Copilot Memory Documentation</h4>
+        <p>Official docs on Copilot Memory — how to configure, manage, and use memory entries for persistent agent context.</p>
+        <p><strong>Good for:</strong> Domain 3 memory configuration details and exam-critical file paths.</p>
+        <div class="links"><a href="https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-memory-for-copilot" target="_blank">GitHub Docs</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h4>Custom Agent Configuration</h4>
+        <p>How to define custom agents in <code>.github/agents/*.agent.md</code> — tool lists, permissions, autonomy levels, and environment targets.</p>
+        <p><strong>Good for:</strong> Hands-on agent profile creation and least-privilege configuration.</p>
+        <div class="links"><a href="https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-agents" target="_blank">GitHub Docs</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <h4>Implementation Planner</h4>
+        <p>GitHub's built-in planning tool for agent development — how to use it to break down requirements, create issues, and track agent tasks.</p>
+        <p><strong>Good for:</strong> Understanding the planning-to-execution handoff and SDLC integration.</p>
+        <div class="links"><a href="https://docs.github.com/en/enterprise-cloud@latest/copilot/using-github-copilot/using-github-copilot-to-plan" target="_blank">GitHub Docs</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Community Study Materials                         -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>📚 3. Community Study Materials</h2>
+    <p class="subtitle">Created by the GH-600 study community. These resources go beyond the official modules with practical study aids, flashcards, and mock exams.</p>
+
+    <div class="resource-card">
+      <h4>jtur671/gh-600-study-guide — The Comprehensive Community Repo</h4>
+      <div class="meta">
+        <span class="tag community">Community</span>
+        <span class="tag">All domains</span>
+      </div>
+      <p>The most comprehensive community study repository. Contains <strong>67 flashcards</strong> covering all domains, a <strong>41-question mock exam</strong>, <strong>6 hands-on labs</strong> (one per domain), and <strong>Anki decks</strong> for spaced-repetition study. Regularly updated with community contributions.</p>
+      <p><strong>Good for:</strong> Everything — flashcards for quick review, mock exam for practice, labs for hands-on learning, Anki for long-term retention.</p>
+      <div class="links">
+        <a href="https://github.com/jtur671/gh-600-study-guide" target="_blank">GitHub Repository</a>
+        <a href="https://github.com/jtur671/gh-600-study-guide/tree/main/flashcards" target="_blank">Flashcards</a>
+        <a href="https://github.com/jtur671/gh-600-study-guide/tree/main/mock-exam" target="_blank">Mock Exam</a>
+        <a href="https://github.com/jtur671/gh-600-study-guide/tree/main/labs" target="_blank">Labs</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Naim149 Public Study Gist — Artifact Mapping Reference</h4>
+      <div class="meta">
+        <span class="tag community">Community</span>
+        <span class="tag">File paths</span>
+      </div>
+      <p>A single-page GitHub Gist that maps every exam-critical file path and concept. Excellent quick-reference for agent profile paths (<code>.github/agents/*.agent.md</code>), instruction file locations (<code>.github/instructions/*.instructions.md</code>), MCP config paths, and workflow file patterns. The most concise artifact mapping available.</p>
+      <p><strong>Good for:</strong> Memorizing exam-critical file paths; quick lookup during study sessions.</p>
+      <div class="links"><a href="https://gist.github.com/naim149/a8aa41c7468685b7d984822c38863aae" target="_blank">View on GitHub Gist</a></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Video Resources                                   -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>🎬 4. Video Resources</h2>
+    <p class="subtitle">Visual learners — these video series walk through exam domains, concepts, and study strategies.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📺</div>
+        <h4>PromptLab 7-Video Series</h4>
+        <p>Free YouTube playlist with one video per exam domain plus an overview video. Clear explanations with visual diagrams. Best for getting a high-level understanding of each domain before diving into details.</p>
+        <p><strong>Good for:</strong> Domain overviews, visual explanations, study companion.</p>
+        <div class="links"><a href="https://www.youtube.com/playlist?list=PLxgUmxsBhjMhyjJhNM9dxSCdJj2yExS2Y" target="_blank">Watch playlist</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎤</div>
+        <h4>Microsoft Reactor Deep Dive</h4>
+        <p>1-hour comprehensive walkthrough of all six exam domains with study tips. Hosted by Microsoft Reactor — the official Microsoft community learning channel. Covers what to expect on the exam, which domains to prioritize, and how to study effectively.</p>
+        <p><strong>Good for:</strong> Deep domain overview, study strategy guidance, official perspective.</p>
+        <div class="links"><a href="https://www.youtube.com/watch?v=bgj20o0kYKg" target="_blank">Watch on YouTube</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Practice & Exam                                   -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>✍️ 5. Practice &amp; Exam</h2>
+    <p class="subtitle">Test your knowledge with practice exams, sandboxes, and discussion threads. Practice is the best way to identify knowledge gaps.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🧪</div>
+        <h4>Exam Sandbox</h4>
+        <p>GitHub's official sandbox environment where you can explore agent configuration, test workflows, and experiment with agent profiles without affecting real repositories. Hands-on practice for every domain.</p>
+        <p><strong>Good for:</strong> Practical experimentation, workflow testing, hands-on learning.</p>
+        <div class="links"><a href="https://gh.io/gh-600-sandbox" target="_blank">gh.io/gh-600-sandbox</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <h4>Community Practice Tests</h4>
+        <p>Multiple community-created practice tests on resources like Quizlet and StudyBlue. The jtur671 repo (see Section 3) includes a 41-question mock exam that closely mirrors the actual exam format.</p>
+        <p><strong>Good for:</strong> Self-assessment, identifying weak domains, exam simulation.</p>
+        <div class="links"><a href="https://github.com/jtur671/gh-600-study-guide/tree/main/mock-exam" target="_blank">Mock exam (GitHub)</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h4>LeetCode Discussion — GH-600</h4>
+        <p>Active discussion thread on LeetCode's forum where candidates share study tips, clarify concepts, and discuss exam experiences. Good for getting answers to specific questions from people who've already taken the exam.</p>
+        <p><strong>Good for:</strong> Clarifying exam concepts, community Q&amp;A, exam experience reports.</p>
+        <div class="links"><a href="https://leetcode.com/discuss/gh-600" target="_blank">LeetCode Discussion</a></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎓</div>
+        <h4>Udemy Course</h4>
+        <p>Comprehensive GH-600 preparation course on Udemy with video lectures, practice questions, and downloadable study materials. Covers all six domains with practical examples and exam tips.</p>
+        <p><strong>Good for:</strong> Structured video learning, practice quizzes, comprehensive preparation.</p>
+        <div class="links"><a href="https://www.udemy.com/course/gh-600-gh600/" target="_blank">View on Udemy</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Registration & Discount                           -->
+  <!-- ============================================================ -->
+  <div class="resource-section">
+    <h2>🏷️ 6. Registration &amp; Discount</h2>
+    <p class="subtitle">Exam registration info, official study guide, and discount codes. The beta exam is significantly discounted — register early.</p>
+
+    <div class="resource-card">
+      <h4>GH-600 Certification Page</h4>
+      <div class="meta">
+        <span class="tag offical">Official</span>
+      </div>
+      <p>The official GitHub certification page for GH-600. Contains the full exam blueprint, skills measured, preparation resources, and registration link. Bookmark this page — it's your primary source of truth for exam logistics.</p>
+      <p><strong>Good for:</strong> Exam registration, official details, skill domain breakdown.</p>
+      <div class="links"><a href="https://gh.io/gh-600" target="_blank">gh.io/gh-600</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Official Study Guide (PDF)</h4>
+      <div class="meta">
+        <span class="tag offical">Official</span>
+      </div>
+      <p>Downloadable PDF study guide published by GitHub. Contains the complete exam blueprint with domain weights, skills measured, and example question formats. Essential reading before you book your exam.</p>
+      <p><strong>Good for:</strong> Exam blueprint reference, understanding what's tested, study planning.</p>
+      <div class="links"><a href="https://gh.io/gh-600-study-guide" target="_blank">gh.io/gh-600-study-guide</a></div>
+    </div>
+
+    <div class="resource-card">
+      <h4>Beta Discount Code: GH600Flanders</h4>
+      <div class="meta">
+        <span class="tag discount">Discount</span>
+        <span class="tag">Limited time</span>
+      </div>
+      <p>The beta exam discount code <strong>GH600Flanders</strong> gives you <strong>80% off</strong> the exam fee for the first 100 candidates. The beta exam is available through June 2026 with results arriving ~8 weeks after the beta period ends. The GA (General Availability) version launches in July 2026.</p>
+      <p><strong>Good for:</strong> Saving money on the exam — use this code at Pearson Vue checkout.</p>
+      <div class="links">
+        <a href="https://gh.io/gh-600" target="_blank">Register at gh.io/gh-600</a>
+        <span style="color:var(--text-secondary)">Code: <strong>GH600Flanders</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Quick-Reference Resource Matrix                              -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>Quick-Reference: Which Resource for What?</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>If You Need...</th>
+          <th>Use This Resource</th>
+        </tr>
+        <tr>
+          <td>Official learning path</td>
+          <td>Microsoft Learn Modules (Section 1)</td>
+        </tr>
+        <tr>
+          <td>Quick domain overviews</td>
+          <td>PromptLab 7-Video Series (Section 4)</td>
+        </tr>
+        <tr>
+          <td>Deep hands-on practice</td>
+          <td>jtur671 6 Labs (Section 3)</td>
+        </tr>
+        <tr>
+          <td>Flashcard memorization</td>
+          <td>jtur671 Anki Decks + 67 Flashcards (Section 3)</td>
+        </tr>
+        <tr>
+          <td>Simulated exam experience</td>
+          <td>jtur671 41-Question Mock Exam (Section 3)</td>
+        </tr>
+        <tr>
+          <td>File path reference</td>
+          <td>Naim149 Gist (Section 3)</td>
+        </tr>
+        <tr>
+          <td>Implementation details</td>
+          <td>GitHub Docs — Agents, Memory, Planner (Section 2)</td>
+        </tr>
+        <tr>
+          <td>Exam logistics</td>
+          <td>Certification Page + Study Guide PDF (Section 6)</td>
+        </tr>
+        <tr>
+          <td>Community tips &amp; Q&amp;A</td>
+          <td>LeetCode Discussion + Reddit (index page)</td>
+        </tr>
+        <tr>
+          <td>Practical experimentation</td>
+          <td>Exam Sandbox (Section 5)</td>
+        </tr>
+        <tr>
+          <td>Discounted exam registration</td>
+          <td>GH600Flanders code at gh.io/gh-600 (Section 6)</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="glossary.html">&larr; Glossary</a>
+    <a href="index.html">Home &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Resources · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+</body>
+</html>

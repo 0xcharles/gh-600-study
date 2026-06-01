@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 6: Governance, Guardrails, and Accountability — GH-600 Study</title>
+<meta name="description" content="Domain 6 lesson page for GH-600: Governance, Guardrails, and Accountability — instructor-style guide with guardrails layered defense SVG, risk-based autonomy, human-in-the-loop workflows, and least-privilege permissions">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html" class="active">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 6 · Weight: 10-15%</div>
+  <h1>Governance, Guardrails,<br>&amp; Accountability</h1>
+  <p>Domain 6 is about <strong>safety and control</strong> — defining how much autonomy agents have, enforcing boundaries through GitHub-native controls, and maintaining audit trails so every action is accountable. This domain is the <strong>guardian</strong> of the entire agentic system.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Risk-Based Autonomy and Action Boundaries          -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. Risk-Based Autonomy and Action Boundaries</h2>
+    <p>The foundational concept of Domain 6 is that <strong>not all agent actions are equal</strong>. Some actions are low-risk (reading a file, creating a draft PR), while others are high-risk (deploying to production, modifying secrets, merging to main). The exam expects you to map <strong>risk levels</strong> to <strong>autonomy levels</strong> and design appropriate boundaries.</p>
+
+    <h3>Autonomy Levels</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Level</th>
+          <th>Name</th>
+          <th>Behavior</th>
+          <th>Example Actions</th>
+        </tr>
+        <tr>
+          <td><strong>L0</strong></td>
+          <td>No Autonomy</td>
+          <td>Agent only responds to explicit human commands; no independent action</td>
+          <td>Copilot Chat completions, code explanations</td>
+        </tr>
+        <tr>
+          <td><strong>L1</strong></td>
+          <td>Supervised</td>
+          <td>Agent proposes actions; human must approve before execution</td>
+          <td>Creating PRs, suggesting code changes, opening issues</td>
+        </tr>
+        <tr>
+          <td><strong>L2</strong></td>
+          <td>Constrained</td>
+          <td>Agent executes autonomously within defined boundaries; human can override</td>
+          <td>Running tests, linting, creating branches, committing to feature branches</td>
+        </tr>
+        <tr>
+          <td><strong>L3</strong></td>
+          <td>Full Autonomy</td>
+          <td>Agent executes all actions independently; human only notified of results</td>
+          <td>Deploying to staging, merging non-critical PRs, triaging issues</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Mapping Risk to Autonomy</h3>
+    <p>The exam's core governance rule: <strong>Higher risk = Lower autonomy</strong>. Map each action to a risk level, then assign the appropriate autonomy level:</p>
+    <ul>
+      <li><strong>Low risk</strong> (reading files, searching code, creating draft PRs) → L2 or L3 autonomy</li>
+      <li><strong>Medium risk</strong> (committing to branches, running CI, modifying non-critical configs) → L1 or L2 autonomy</li>
+      <li><strong>High risk</strong> (merging to main, deploying to production, modifying secrets, changing access controls) → L0 or L1 autonomy (human must approve)</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — The Autonomy Spectrum Is Continuous:</strong> Don't think of autonomy levels as fixed tiers. Think of them as a <strong>spectrum</strong> where you slide the autonomy dial based on risk. The exam expects you to <strong>calibrate</strong> — not just choose a level, but explain <em>why</em> that level is appropriate for the given risk profile. Always justify your autonomy choice with the specific risk involved.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: GitHub-Native Controls                             -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. GitHub-Native Controls: Rulesets, Checks, CODEOWNERS, Environments</h2>
+    <p>GitHub provides a suite of built-in controls that serve as guardrails for agent behavior. The exam tests your knowledge of each control's purpose, configuration, and interaction.</p>
+
+    <h3>Rulesets</h3>
+    <p>Rulesets are the <strong>first line of defense</strong>. They define allowed and disallowed operations at the repository or organization level.</p>
+    <ul>
+      <li><strong>What they control:</strong> Branch creation, branch deletion, pushing to protected branches, tag creation, required linear history</li>
+      <li><strong>Use for:</strong> Preventing agents from bypassing standard workflows (e.g., directly pushing to main)</li>
+      <li><strong>Exam tip:</strong> Rulesets are <strong>enforced at the Git protocol level</strong> — even agents with write access cannot bypass them</li>
+    </ul>
+
+    <h3>Required Checks / Status Checks</h3>
+    <p>Required checks enforce that certain CI workflows must pass before a PR can merge. These are defined in branch protection rules or rulesets.</p>
+    <ul>
+      <li><strong>What they control:</strong> Which workflows must pass (CodeQL, tests, linting, build)</li>
+      <li><strong>Use for:</strong> Ensuring agent output meets quality gates before entering main</li>
+      <li><strong>Exam tip:</strong> Required checks are the bridge between Domain 4 (evaluation) and Domain 6 (guardrails)</li>
+    </ul>
+
+    <h3>CODEOWNERS</h3>
+    <p>CODEOWNERS automatically assigns reviewers based on file paths. This ensures that changes to critical files are reviewed by the right people or teams.</p>
+    <ul>
+      <li><strong>What it controls:</strong> Who must review changes to specific files or directories</li>
+      <li><strong>Use for:</strong> Ensuring agent changes to sensitive files (config, security, deployment scripts) get expert review</li>
+      <li><strong>Exam tip:</strong> CODEOWNERS is not just about humans — an agent can be a CODEOWNER too (agent profile can be listed)</li>
+    </ul>
+
+    <h3>Environments</h3>
+    <p>GitHub Environments add a layer of protection around deployment targets. Each environment can have its own protection rules.</p>
+    <ul>
+      <li><strong>What they control:</strong> Who or what can deploy to an environment; required approvals; wait timers</li>
+      <li><strong>Use for:</strong> Protecting production deployments — require human approval even if an agent initiates the deployment</li>
+      <li><strong>Exam tip:</strong> Environment protection rules can require <strong>multiple approvers</strong> and enforce <strong>wait times</strong> between deployment stages</li>
+    </ul>
+
+    <div class="code-block"># Example: CODEOWNERS for sensitive agent-controlled files
+
+# All agent configuration files need senior dev review
+.github/agents/ @senior-devs
+
+# Deployment scripts need ops review
+deploy/ @ops-team
+
+# Security configs need security team review
+security/ @security-team
+
+# Root-level config files need both
+*.yml *.yaml @senior-devs @ops-team</div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> A common exam question presents a scenario where an agent bypasses a protection mechanism and asks: <em>"Which control should have prevented this?"</em> If an agent pushes directly to main → <strong>rulesets/branch protection</strong>. If an agent merges without passing tests → <strong>required status checks</strong>. If an agent deploys to production without approval → <strong>environment protection rules</strong>. Know which control addresses which type of bypass.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Guardrails Layered Defense Diagram                 -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Guardrails: Layered Defense in Depth</h2>
+    <p>Governance works best as a <strong>layered defense</strong>. No single guardrail is sufficient — you need multiple layers that reinforce each other. The diagram below shows the six layers of defense, from outermost (broadest protection) to innermost (most specific):</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 720 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Guardrails layered defense diagram showing six layers from branch protection to hooks">
+        <defs>
+          <linearGradient id="bgD6" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fef2f2" />
+            <stop offset="100%" stop-color="#fee2e2" />
+          </linearGradient>
+          <!-- Layer colors from outermost to innermost -->
+          <linearGradient id="layer1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1e3a5f" />
+            <stop offset="100%" stop-color="#2563eb" />
+          </linearGradient>
+          <linearGradient id="layer2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3730a3" />
+            <stop offset="100%" stop-color="#4f46e5" />
+          </linearGradient>
+          <linearGradient id="layer3" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed" />
+            <stop offset="100%" stop-color="#8b5cf6" />
+          </linearGradient>
+          <linearGradient id="layer4" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#b91c1c" />
+            <stop offset="100%" stop-color="#dc2626" />
+          </linearGradient>
+          <linearGradient id="layer5" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#a16207" />
+            <stop offset="100%" stop-color="#ca8a04" />
+          </linearGradient>
+          <linearGradient id="layer6" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#065f46" />
+            <stop offset="100%" stop-color="#059669" />
+          </linearGradient>
+          <filter id="shadowD6">
+            <feDropShadow dx="0" dy="2" stdDeviation="6" flood-opacity=".2" />
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="720" height="600" rx="10" fill="url(#bgD6)" />
+
+        <!-- Title -->
+        <text x="360" y="30" text-anchor="middle" fill="#7f1d1d" font-size="16" font-weight="800" font-family="Inter,sans-serif">Guardrails: Six Layers of Defense in Depth</text>
+        <text x="360" y="50" text-anchor="middle" fill="#991b1b" font-size="11" font-family="Inter,sans-serif">Outermost → Broadest protection &nbsp;&nbsp;|&nbsp;&nbsp; Innermost → Most specific control</text>
+
+        <!-- Outer ring labels -->
+        <text x="360" y="78" text-anchor="middle" fill="#1e3a5f" font-size="10" font-weight="700" font-family="Inter,sans-serif">Layer 1 (Outer-most)</text>
+        <text x="360" y="548" text-anchor="middle" fill="#065f46" font-size="10" font-weight="700" font-family="Inter,sans-serif">Layer 6 (Inner-most)</text>
+
+        <!-- Row 1: Branch Protection (Layer 1) -->
+        <rect x="110" y="88" width="500" height="62" rx="10" fill="url(#layer1)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="111" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">🔒 Layer 1: Branch Protection Rules</text>
+        <text x="360" y="128" text-anchor="middle" fill="#bfdbfe" font-size="11" font-family="Inter,sans-serif">Require PRs · Require linear history · Require up-to-date branches · Lock branches</text>
+        <text x="360" y="143" text-anchor="middle" fill="#93c5fd" font-size="10" font-family="Inter,sans-serif">Prevents direct pushes, ensures all changes go through PR workflow</text>
+
+        <!-- Arrow -->
+        <line x1="360" y1="150" x2="360" y2="172" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Row 2: Rulesets (Layer 2) -->
+        <rect x="130" y="175" width="460" height="62" rx="10" fill="url(#layer2)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="198" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">📋 Layer 2: Repository Rulesets</text>
+        <text x="360" y="215" text-anchor="middle" fill="#c7d2fe" font-size="11" font-family="Inter,sans-serif">Allow/block operations · Tag protection · Commit signing enforcement</text>
+        <text x="360" y="230" text-anchor="middle" fill="#a5b4fc" font-size="10" font-family="Inter,sans-serif">Git-protocol-level enforcement — even admins can't bypass</text>
+
+        <!-- Arrow -->
+        <line x1="360" y1="237" x2="360" y2="258" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Row 3: Environment Protection (Layer 3) -->
+        <rect x="150" y="261" width="420" height="62" rx="10" fill="url(#layer3)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="284" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">🌐 Layer 3: Environment Protection Rules</text>
+        <text x="360" y="301" text-anchor="middle" fill="#e9d5ff" font-size="11" font-family="Inter,sans-serif">Required approvers · Wait timers · Deployment branch restrictions</text>
+        <text x="360" y="316" text-anchor="middle" fill="#d8b4fe" font-size="10" font-family="Inter,sans-serif">Controls who can deploy to staging, production, and other environments</text>
+
+        <!-- Arrow -->
+        <line x1="360" y1="323" x2="360" y2="344" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Row 4: Workflow Approvals (Layer 4) -->
+        <rect x="170" y="347" width="380" height="62" rx="10" fill="url(#layer4)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="370" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">✅ Layer 4: Workflow Approvals</text>
+        <text x="360" y="387" text-anchor="middle" fill="#fecaca" font-size="11" font-family="Inter,sans-serif">Required reviewers · CODEOWNERS · Environment approval gates</text>
+        <text x="360" y="402" text-anchor="middle" fill="#fca5a5" font-size="10" font-family="Inter,sans-serif">Human-in-the-loop for high-risk actions</text>
+
+        <!-- Arrow -->
+        <line x1="360" y1="409" x2="360" y2="430" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Row 5: Audit Logs (Layer 5) -->
+        <rect x="190" y="433" width="340" height="62" rx="10" fill="url(#layer5)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="456" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">📜 Layer 5: Audit Logs &amp; Traceability</text>
+        <text x="360" y="473" text-anchor="middle" fill="#fef9c3" font-size="11" font-family="Inter,sans-serif">GitHub Audit Log · Workflow run logs · Session logs</text>
+        <text x="360" y="488" text-anchor="middle" fill="#fde68a" font-size="10" font-family="Inter,sans-serif">Complete record of every action for post-hoc review</text>
+
+        <!-- Arrow -->
+        <line x1="360" y1="495" x2="360" y2="516" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Row 6: Hooks (Layer 6 - Innermost) -->
+        <rect x="210" y="519" width="300" height="55" rx="10" fill="url(#layer6)" filter="url(#shadowD6)" opacity=".95" />
+        <text x="360" y="542" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="Inter,sans-serif">🔗 Layer 6: Hooks &amp; Pre-Receive Hooks</text>
+        <text x="360" y="559" text-anchor="middle" fill="#d1fae5" font-size="11" font-family="Inter,sans-serif">Custom server-side validation · Pre-commit · Pre-push</text>
+        <text x="360" y="574" text-anchor="middle" fill="#a7f3d0" font-size="10" font-family="Inter,sans-serif">Final gate — custom logic before accepting any change</text>
+
+        <!-- Side labels -->
+        <text x="35" y="120" text-anchor="start" fill="#475569" font-size="9" font-weight="600" font-family="Inter,sans-serif">BROAD</text>
+        <text x="35" y="135" text-anchor="start" fill="#475569" font-size="8" font-family="Inter,sans-serif">(repo-wide)</text>
+
+        <text x="670" y="545" text-anchor="end" fill="#475569" font-size="9" font-weight="600" font-family="Inter,sans-serif">SPECIFIC</text>
+        <text x="670" y="560" text-anchor="end" fill="#475569" font-size="8" font-family="Inter,sans-serif">(per-action)</text>
+
+        <!-- Side bracket arrows -->
+        <text x="80" y="365" text-anchor="middle" fill="#475569" font-size="22" font-family="Inter,sans-serif" transform="rotate(-90, 80, 365)">DEFENSE IN DEPTH →</text>
+        <text x="645" y="365" text-anchor="middle" fill="#475569" font-size="22" font-family="Inter,sans-serif" transform="rotate(90, 645, 365)">← EACH LAYER ADDS FRICTION</text>
+      </svg>
+      <div class="diagram-caption">Figure 6.1 — Guardrails Layered Defense: Six layers from outermost (broad branch protection) to innermost (specific pre-receive hooks). Each layer adds additional protection; an agent must pass through all layers to complete a high-risk action.</div>
+    </div>
+
+    <p>The key principle: <strong>defense in depth</strong>. No single guardrail is sufficient. If an agent bypasses branch protection (Layer 1), rulesets (Layer 2) still enforce Git protocol rules. If an agent somehow creates a valid PR, environment protection (Layer 3) still requires approval for deployment. Each layer adds friction specifically calibrated to the risk level of the action.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — Memorize the Layer Order:</strong> The exam WILL ask about the layering order. Remember the acronym <strong>BREAD-H</strong>: <strong>B</strong>ranch Protection → <strong>R</strong>ulesets → <strong>E</strong>nvironment Protection → <strong>A</strong>pprovals → <strong>D</strong>ata/Audit Logs → <strong>H</strong>ooks. This is the order from outermost to innermost. If a question asks which layer catches a specific bypass, trace from the outside inward to find the first layer that would have caught it.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Human-in-the-Loop Workflows                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. Human-in-the-Loop Workflows for High-Risk Actions</h2>
+    <p>Some actions are too risky for even the most constrained agent. The exam expects you to know when and how to insert a <strong>human-in-the-loop (HITL)</strong> gate into your agent workflows.</p>
+
+    <h3>When to Require Human Approval</h3>
+    <ul>
+      <li><strong>Deploying to production</strong> — requires environment approval rules</li>
+      <li><strong>Merging to main or protected branches</strong> — requires PR review approval</li>
+      <li><strong>Modifying security configurations</strong> — requires security team sign-off</li>
+      <li><strong>Making changes to compliance-scoped files</strong> — CODEOWNERS review required</li>
+      <li><strong>Actions that incur cost</strong> — cloud resource provisioning, API usage at scale</li>
+    </ul>
+
+    <h3>HITL Implementation Patterns</h3>
+    <ul>
+      <li><strong>PR review required:</strong> Agent creates a PR with changes; human must review and approve before merging</li>
+      <li><strong>Environment approval gates:</strong> Even if an agent triggers a deployment workflow, the environment protection rule requires a human approver</li>
+      <li><strong>Workflow dispatch with manual trigger:</strong> High-risk workflows require a human to manually trigger them via <code>workflow_dispatch</code> with required inputs</li>
+      <li><strong>Deployment protection rules with wait timer:</strong> Forces a cool-down period before deployment, giving humans time to intervene</li>
+      <li><strong>Required reviewers in CODEOWNERS:</strong> Critical files automatically get human reviewers added to the PR</li>
+    </ul>
+
+    <div class="code-block"># Example: Human-in-the-loop deployment workflow
+name: Deploy with Approval
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: environment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      # Environment protection rules require manual approval
+      # configured in Settings > Environments
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: ./deploy.sh</div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> The exam will test whether you know the difference between <strong>PR review</strong> and <strong>environment approval</strong>. PR review is about <em>code quality</em> — is the code correct? Environment approval is about <em>deployment risk</em> — is it safe to deploy this to production? They are separate gates that serve different purposes. A question that says "the agent's PR was approved but the deployment was blocked" is testing this distinction.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Least-Privilege Permissions                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. Least-Privilege Permissions for Agent Capabilities</h2>
+    <p>The <strong>principle of least privilege</strong> states that every agent should have only the permissions it needs to perform its role — nothing more. This is a core governance concept on the exam.</p>
+
+    <h3>Where Privilege Is Configured</h3>
+    <ul>
+      <li><strong>Agent profile (<code>.github/agents/*.agent.md</code>):</strong> Each agent's <code>tools</code> list and <code>permissions</code> block define its capabilities</li>
+      <li><strong>Workflow permissions:</strong> GitHub Actions <code>permissions:</code> key controls what the GITHUB_TOKEN can do</li>
+      <li><strong>Repository/org-level token permissions:</strong> Restrict what tokens agents can use</li>
+      <li><strong>Environment secrets:</strong> Sensitive credentials are scoped to specific environments</li>
+    </ul>
+
+    <h3>Applying Least Privilege</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Agent Role</th>
+          <th>Needs</th>
+          <th>Does NOT Need</th>
+        </tr>
+        <tr>
+          <td>Plan Agent</td>
+          <td><code>file-read</code>, <code>issue-create</code>, <code>search</code></td>
+          <td><code>file-write</code>, <code>shell</code>, <code>environment-select</code></td>
+        </tr>
+        <tr>
+          <td>Dev Agent</td>
+          <td><code>file-read</code>, <code>file-write</code>, <code>shell</code>, <code>search</code></td>
+          <td><code>environment-select</code>, <code>admin</code></td>
+        </tr>
+        <tr>
+          <td>Review Agent</td>
+          <td><code>file-read</code>, <code>pr-comment</code>, <code>search</code></td>
+          <td><code>file-write</code>, <code>shell</code>, <code>deploy</code></td>
+        </tr>
+        <tr>
+          <td>Deploy Agent</td>
+          <td><code>file-read</code>, <code>shell</code>, <code>environment-select</code></td>
+          <td><code>file-write</code> (on source), <code>issue-create</code></td>
+        </tr>
+        <tr>
+          <td>Monitor Agent</td>
+          <td><code>file-read</code>, <code>web</code>, <code>search</code></td>
+          <td><code>file-write</code>, <code>shell</code>, all privileged actions</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Common Privilege Mistakes (Exam Traps)</h3>
+    <ul>
+      <li><strong>Privilege creep:</strong> Adding tools to an agent over time without removing unused ones — leads to excessive permissions</li>
+      <li><strong>Copy-paste agent profiles:</strong> Reusing an agent profile from another project without auditing tools — gives unnecessary access</li>
+      <li><strong>Overly broad file permissions:</strong> Allowing an agent to write to <code>/**</code> instead of a specific directory — widens blast radius</li>
+      <li><strong>Missing tool restrictions:</strong> Not configuring restricted commands or allowed directories for the <code>shell</code> tool — agent can run arbitrary commands</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — Audit Agents Regularly:</strong> Least privilege is not a one-time configuration. The exam expects you to understand that agent permissions should be <strong>audited and reviewed</strong> regularly — similar to how you'd review IAM policies for human users. Any time an agent's role changes, its permissions should be re-evaluated. Think of it as <strong>permission lifecycle management</strong> for agents.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Observability, Traceability, Auditability         -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. Observability, Traceability, and Auditability</h2>
+    <p>Governance isn't just about <strong>preventing</strong> bad actions — it's also about <strong>detecting</strong> them and <strong>proving</strong> what happened. The exam defines three related but distinct concepts:</p>
+
+    <h3>Observability</h3>
+    <p>The ability to <strong>understand the internal state</strong> of the agent system from its external outputs. You can observe what agents are doing, how they're performing, and what signals they're producing.</p>
+    <ul>
+      <li><strong>Mechanisms:</strong> Workflow run logs, agent session logs, status checks, health checks</li>
+      <li><strong>Purpose:</strong> Real-time understanding of agent behavior — is the system healthy?</li>
+    </ul>
+
+    <h3>Traceability</h3>
+    <p>The ability to <strong>follow the chain of actions</strong> from end to end. You can trace a specific change back to the agent that made it, the task that triggered it, and the decision that authorized it.</p>
+    <ul>
+      <li><strong>Mechanisms:</strong> Commit attribution, PR authorship, workflow run IDs, cross-referenced logs</li>
+      <li><strong>Purpose:</strong> Forensic analysis — who did what, when, and why?</li>
+    </ul>
+
+    <h3>Auditability</h3>
+    <p>The ability to <strong>prove compliance</strong> with policies and standards. You can produce evidence that the system operates within its defined governance boundaries.</p>
+    <ul>
+      <li><strong>Mechanisms:</strong> GitHub Audit Log, workflow run history, artifact retention, compliance reports</li>
+      <li><strong>Purpose:</strong> External verification — can you prove to an auditor that governance was followed?</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The Three A's:</strong> Remember the distinction: <strong>Observability</strong> = "Is it working now?" (real-time), <strong>Traceability</strong> = "What happened?" (forensic), <strong>Auditability</strong> = "Can we prove it?" (compliance). The exam will use these terms precisely — a question about "proving compliance to an auditor" is about <strong>auditability</strong>, not observability or traceability.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: Maintaining Governance Over Time                  -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. Maintaining Governance Over Time</h2>
+    <p>Governance is not a set-it-and-forget-it activity. The exam expects you to understand how to <strong>maintain</strong> governance as the agent system evolves.</p>
+
+    <h3>Governance Lifecycle</h3>
+    <ul>
+      <li><strong>Initial setup:</strong> Define risk profiles, configure guardrails, assign autonomy levels</li>
+      <li><strong>Ongoing monitoring:</strong> Review audit logs, analyze failure patterns, check for governance violations</li>
+      <li><strong>Periodic review:</strong> Re-evaluate autonomy levels as agents prove their reliability; tighten controls for new risks</li>
+      <li><strong>Incident response:</strong> When a governance violation occurs, investigate root cause and update controls</li>
+    </ul>
+
+    <h3>Governance Degradation Patterns</h3>
+    <ul>
+      <li><strong>Control fatigue:</strong> Too many approvals slow down development, leading teams to bypass controls</li>
+      <li><strong>Privilege drift:</strong> Agents accumulate permissions over time as new tools are added without removing old ones</li>
+      <li><strong>Ruleset staleness:</strong> Rulesets become outdated as the codebase evolves, no longer covering new risk areas</li>
+      <li><strong>Reviewer burnout:</strong> CODEOWNERS file becomes stale; reviewers are no longer the right people for the code</li>
+    </ul>
+
+    <h3>Best Practices for Governance Maintenance</h3>
+    <ul>
+      <li><strong>Schedule regular audits:</strong> Quarterly review of agent permissions, rulesets, and autonomy levels</li>
+      <li><strong>Automate governance checks:</strong> Use workflows to validate agent profiles against governance policies</li>
+      <li><strong>Document governance decisions:</strong> Every autonomy level assignment should have a documented rationale</li>
+      <li><strong>Test guardrails:</strong> Periodically attempt to bypass controls to verify they're still working</li>
+      <li><strong>Update CODEOWNERS:</strong> Keep file ownership current as team membership changes</li>
+    </ul>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> A question might describe a scenario where <strong>governance has degraded over time</strong> and ask: <em>"What's the most likely cause?"</em> The answer is usually <strong>privilege drift</strong> — agents accumulating permissions without review. The second most common cause is <strong>ruleset staleness</strong> — governance rules that haven't been updated to cover new capabilities or workflows. Know both patterns.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Key Takeaways                                     -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Domain 6 Key Takeaways</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Concept</th>
+          <th>Key Insight</th>
+          <th>Exam Tip</th>
+        </tr>
+        <tr>
+          <td>Risk-Based Autonomy</td>
+          <td>Higher risk = Lower autonomy; calibrate autonomy to risk level</td>
+          <td>Map each action to risk, then assign autonomy level</td>
+        </tr>
+        <tr>
+          <td>GitHub-Native Controls</td>
+          <td>Rulesets (Git protocol), Checks (CI gates), CODEOWNERS (review), Environments (deployment)</td>
+          <td>Each control addresses a different bypass vector</td>
+        </tr>
+        <tr>
+          <td>Guardrails Layered Defense</td>
+          <td>BREAD-H: Branch Protection → Rulesets → Env Protection → Approvals → Audit Logs → Hooks</td>
+          <td>Remember the layer order (outermost to innermost)</td>
+        </tr>
+        <tr>
+          <td>Human-in-the-Loop</td>
+          <td>PR review for code quality; Environment approval for deployment risk</td>
+          <td>These are separate gates with different purposes</td>
+        </tr>
+        <tr>
+          <td>Least-Privilege Permissions</td>
+          <td>Audit agent profiles; revoke unused tools; scope file access</td>
+          <td>Privilege creep is the most common governance failure</td>
+        </tr>
+        <tr>
+          <td>Observability vs Traceability vs Auditability</td>
+          <td>Observability (real-time), Traceability (forensic), Auditability (compliance)</td>
+          <td>Match the term to the question: "proving" = auditability</td>
+        </tr>
+        <tr>
+          <td>Governance Maintenance</td>
+          <td>Schedule audits, automate checks, test guardrails, update CODEOWNERS</td>
+          <td>Degradation is gradual — privilege drift is the #1 cause</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="domain-5.html">&larr; D5: Multi-Agent</a>
+    <a href="glossary.html">Glossary &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 6 · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+</body>
+</html>

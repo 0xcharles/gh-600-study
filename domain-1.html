@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 1: Agent Architecture &amp; SDLC Processes — GH-600 Study</title>
+<meta name="description" content="Domain 1 lesson page for GH-600: Agent Architecture & SDLC Processes — instructor-style guide with diagrams, code examples, and exam-focused content">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html" class="active">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 1 · Weight: 15-20%</div>
+  <h1>Agent Architecture &amp;<br>SDLC Processes</h1>
+  <p>Learn how to design agent workflows that integrate safely into software delivery — defining planning vs execution boundaries, configuring governance, and building reliable, observable agent systems that your team can trust.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Agent Responsibilities in the SDLC                -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. Agent Responsibilities in the SDLC</h2>
+    <p>Let's start with the big picture. An <strong>agentic AI system</strong> is not a chatbot that answers questions — it's an autonomous system that takes actions against real infrastructure. In the SDLC context, agents participate in every stage of software delivery: <strong>planning, coding, building, testing, releasing, deploying, operating, and monitoring</strong>.</p>
+    <p>The exam wants you to understand which stages are <em>good</em> for agents and which ones need human oversight. Here's the breakdown:</p>
+
+    <h3>Stages Where Agents Excel</h3>
+    <ul>
+      <li><strong>Planning &amp; Triage:</strong> Agents can scan issue queues, classify bugs, suggest labels, and auto-assign work based on skill matching. They can also research relevant code before a human picks up a ticket.</li>
+      <li><strong>Coding (Controlled):</strong> Agents generate code, write tests, and refactor — but always inside a branch with guardrails. They never commit directly to <code>main</code>.</li>
+      <li><strong>Building &amp; Testing:</strong> Agents can trigger CI workflows, parse build logs, detect regressions, and auto-retry flaky tests.</li>
+      <li><strong>Release &amp; Deploy:</strong> With the right autonomy level, agents can cut releases, promote artifacts between environments, and roll back on failure.</li>
+      <li><strong>Monitoring:</strong> Agents watch dashboards, correlate alerts, and file new issues when anomaly patterns emerge.</li>
+    </ul>
+
+    <h3>Stages Where Agents Are Less Suitable</h3>
+    <ul>
+      <li><strong>Strategic Planning:</strong> Agents don't decide the product roadmap. That requires human context, business judgment, and stakeholder alignment.</li>
+      <li><strong>Code Review:</strong> Agents can <em>assist</em> with review (linting, security scanning, diff analysis), but the final sign-off must be human.</li>
+      <li><strong>Incident Response (Severe):</strong> While agents can triage, the actual decision to rollback, hotfix, or page an on-call engineer requires human judgment.</li>
+      <li><strong>Production Deployments (Unsupervised):</strong> Pushing to production without any human gate is almost always an anti-pattern (unless you have extremely mature rollback automation).</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip:</strong> The exam will give you a scenario and ask: "Is this a good task for an agent?" The decision rule is: <em>Does the task have a clear input, a defined process, and a checkable output?</em> If yes, an agent can probably do it. If the success criteria are fuzzy or require human empathy, keep the human in the loop.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Anti-Patterns                                     -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. Anti-Patterns to Recognize</h2>
+    <p>Domain 1 specifically tests your ability to <strong>identify and avoid common agent anti-patterns</strong>. These show up in case studies where something goes wrong, and you need to choose the right fix.</p>
+
+    <h3>🔄 Autonomy Mismatch</h3>
+    <p>Giving an agent <em>more</em> autonomy than a task requires — or <em>less</em> than it needs to be useful. For example, giving a code-generation agent full shell access when it only needs file-write permissions. The result: unnecessary risk. On the flip side, giving a monitoring agent <em>read-only</em> access when it needs to <em>remediate</em> means it can alert but never fix.</p>
+    <p><strong>Fix:</strong> Match the minimum autonomy level to the task's actual requirements. We'll cover autonomy levels in depth later.</p>
+
+    <h3>📋 Plan-as-Checklist</h3>
+    <p>An agent generates a plan, the human approves it, and then the agent executes <em>exactly</em> what it said — even if conditions change during execution. This treats the plan as a rigid checklist instead of a set of intended outcomes.</p>
+    <p><strong>Fix:</strong> The plan is a <em>reviewable intent</em>, not a fixed contract. Agents should re-evaluate against current state and flag deviations.</p>
+
+    <h3>📈 Scope Creep</h3>
+    <p>The agent starts with one task ("fix the bug in auth"), then widens into refactoring the entire auth module, adding tests, changing the database schema, and deploying a new version — all in one session without checkpointing or human approval.</p>
+    <p><strong>Fix:</strong> Break large tasks into small, discrete steps. Use checkpoints. Require human approval before crossing scope boundaries.</p>
+
+    <h3>🔇 Silent Failure</h3>
+    <p>An agent encounters an error and quietly retries, gives up, or produces a degraded result without notifying anyone. This is dangerous because downstream processes depend on the agent's output.</p>
+    <p><strong>Fix:</strong> Always log failures, surface them to the orchestration layer, and escalate to a human if retries are exhausted. Never let an agent silently fail.</p>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Warning:</strong> On the case study sections, you'll almost certainly see a scenario involving <em>silent failure</em> or <em>autonomy mismatch</em>. The wrong answer will sound reasonable but skip the governance step. Always pick the answer that includes <strong>observability, logging, or human escalation</strong>.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Input, Output, Success Criteria Table             -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Input, Output &amp; Success Criteria</h2>
+    <p>Every agent task must have <strong>well-defined inputs, expected outputs, and measurable success criteria</strong>. If any of these three is vague, the agent will produce unpredictable results. Here's a reference table:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Task</th>
+          <th>Input</th>
+          <th>Expected Output</th>
+          <th>Success Criteria</th>
+        </tr>
+        <tr>
+          <td>Classify incoming issues</td>
+          <td>Issue title + body</td>
+          <td>Label assignment, priority score</td>
+          <td>Accuracy &gt; 90% vs human baseline</td>
+        </tr>
+        <tr>
+          <td>Generate unit tests</td>
+          <td>Source file, function signatures</td>
+          <td>Test file with assertions</td>
+          <td>Tests pass, coverage gain &gt; 5%</td>
+        </tr>
+        <tr>
+          <td>Write PR description</td>
+          <td>Diff, commit messages</td>
+          <td>Summary, change log, testing notes</td>
+          <td>Follows team template, human approves</td>
+        </tr>
+        <tr>
+          <td>Review code for security</td>
+          <td>PR diff, dependency manifest</td>
+          <td>List of vulnerabilities found</td>
+          <td>Detected &gt; 80% of known vulns in test set</td>
+        </tr>
+        <tr>
+          <td>Cut release + deploy to staging</td>
+          <td>Release tag, environment config</td>
+          <td>Deployment URL, health check pass</td>
+          <td>All smoke tests green, no rollback</td>
+        </tr>
+      </table>
+    </div>
+
+    <p>Notice the pattern: <strong>success criteria are quantitative and verifiable</strong>. Not "make the code better" — that's not measurable. Always define success in terms a CI pipeline or a reviewer can check.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Planning vs Execution Separation                  -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. Planning vs Execution Separation</h2>
+    <p>This is one of the most important concepts in Domain 1 — and it appears in multiple exam questions. The core principle is:</p>
+
+    <div class="callout success">
+      <p><strong>✅ Core Principle:</strong> A <strong>plan</strong> is a <strong>reviewable intent</strong> — it describes what the agent proposes to do. <strong>Execution</strong> is the act of <strong>changing state</strong> — writing files, running commands, making API calls. These two phases <em>must</em> be separated by a human review gate.</p>
+    </div>
+
+    <p>Why does this matter? Because a plan costs nothing to produce, but execution has real-world consequences. A plan that deletes a file is safe to review; actual deletion is destructive. By separating the phases, you get:</p>
+    <ul>
+      <li><strong>Safety:</strong> Humans can catch mistakes before they happen.</li>
+      <li><strong>Auditability:</strong> You have a record of what was proposed vs what was actually done.</li>
+      <li><strong>Collaboration:</strong> Multiple humans can weigh in on the plan before execution starts.</li>
+    </ul>
+
+    <h3>How It Works in Practice</h3>
+    <p>A typical separated workflow looks like this in a GitHub Actions context:</p>
+
+    <div class="code-block">name: Agent Planning Session
+on:
+  workflow_dispatch:
+    inputs:
+      task_description:
+        description: 'Describe the task for the agent'
+        required: true
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate plan from task
+        run: |
+          echo "## Agent Plan" > plan.md
+          echo "### Proposed Changes" >> plan.md
+          echo "1. Create src/utils/validator.py" >> plan.md
+          echo "2. Add unit tests in tests/test_validator.py" >> plan.md
+          echo "3. Update requirements.txt" >> plan.md
+          echo "" >> plan.md
+          echo "### Risk Assessment" >> plan.md
+          echo "- No breaking changes expected" >> plan.md
+          echo "- All new code covered by tests" >> plan.md
+      - name: Upload plan as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-plan
+          path: plan.md
+    # Human reviews the plan artifact before approving execution</div>
+
+    <p>After the human approves, a <em>separate</em> execution workflow runs, using <code>needs</code> to depend on the plan workflow's approval:</p>
+
+    <div class="code-block">name: Agent Execution
+on:
+  workflow_run:
+    workflows: ["Agent Planning Session"]
+    types: [completed]
+    # Only runs if the plan workflow completed successfully
+
+jobs:
+  execute:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Execute agent tasks
+        run: |
+          # Agent generates code, writes files, runs tests
+          python3 -c "
+          # Agent creates the validator module
+          import os
+          os.makedirs('src/utils', exist_ok=True)
+          with open('src/utils/validator.py', 'w') as f:
+              f.write('# Validator module\n')
+          print('Execution complete')
+          "
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: agent-execution-${{ github.run_id }}
+          title: 'Agent: Implement validator module'
+          body-path: plan.md</div>
+
+    <div class="callout tip">
+      <p><strong>🧠 Teaching Tip:</strong> Remember the exam slogan: <em>"Plan is reviewable intent; execution changes state."</em> If you see an exam answer that combines planning and execution into a single step without a human gate, that's the wrong answer — even if it's faster or more efficient.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Autonomy Levels                                   -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. Autonomy Levels</h2>
+    <p>Not all agents need the same level of freedom. The exam defines <strong>three autonomy levels</strong> that map to the capabilities an agent is granted:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Level</th>
+          <th>Allowed Operations</th>
+          <th>Example Tools</th>
+          <th>When to Use</th>
+        </tr>
+        <tr>
+          <td><strong>Low</strong></td>
+          <td>Read, search, summarize</td>
+          <td>File reader, grep, GitHub issue viewer, code search</td>
+          <td>Triage, research, documentation queries</td>
+        </tr>
+        <tr>
+          <td><strong>Medium</strong></td>
+          <td>Low + edit, execute approved scripts, create PRs</td>
+          <td>File writer, command runner, PR creator, test runner</td>
+          <td>Code generation, bug fixes, refactoring with review</td>
+        </tr>
+        <tr>
+          <td><strong>High</strong></td>
+          <td>Medium + agent delegation, MCP servers, shell commands</td>
+          <td>Sub-agent spawner, MCP tools, unrestricted shell, deployment triggers</td>
+          <td>Complex workflows, multi-step automation, autonomous deployments (with guardrails)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Choosing the Right Level</h3>
+    <p>The rule of thumb: <strong>start low, escalate only when needed</strong>. If a task can be accomplished with read-only access, don't give the agent write permissions. If a task needs to create a PR but doesn't need shell access, use Medium — not High.</p>
+
+    <p>Here's how you might configure autonomy levels in an agent's YAML configuration:</p>
+
+    <div class="code-block"># .github/agent-config.yaml
+agent:
+  name: "triage-agent"
+  autonomy_level: "low"  # Options: low | medium | high
+  
+  # Low-level capabilities
+  tools:
+    - type: file_reader
+      allowed_paths: ["src/**", "tests/**"]
+    - type: search
+      max_results: 50
+
+  # Medium capabilities (only if autonomy_level >= medium)
+  elevated_tools:
+    - type: file_writer
+      allowed_paths: ["src/**", "tests/**"]
+      max_file_size: 1MB
+    - type: pr_creator
+      require_reviewers: true
+      require_checks: true
+
+  # High capabilities (only if autonomy_level == high)
+  full_tools:
+    - type: shell
+      allowed_commands: ["npm test", "python -m pytest", "git status"]
+      deny_list: ["rm -rf", "sudo", "> /dev/sda"]</div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> The exam will test whether you can <strong>match autonomy level to a scenario</strong>. If the scenario says "an agent that researches a bug" — that's Low. If it says "an agent that writes a fix and opens a PR" — that's Medium. If it says "an agent that edits infrastructure and deploys" — that's High. Don't over- or under-assign.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Task Quality — Weak vs Well-Defined               -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. Task Quality: Weak vs Well-Defined</h2>
+    <p>An agent is only as good as the task you give it. Vague instructions produce unpredictable outcomes. The exam expects you to distinguish between <strong>weak tasks</strong> and <strong>well-defined tasks</strong>.</p>
+
+    <h3>Weak Tasks (Avoid These)</h3>
+    <ul>
+      <li>"Fix the login page" — What's wrong with it? What does "fixed" mean?</li>
+      <li>"Improve performance" — By how much? Measured how? In what scope?</li>
+      <li>"Review the code" — What kind of review? Security, style, correctness?</li>
+      <li>"Make it better" — This isn't a task at all.</li>
+    </ul>
+
+    <h3>Well-Defined Tasks (Good Examples)</h3>
+    <ul>
+      <li>"Add input validation to <code>src/auth/login.ts</code> that rejects email addresses longer than 254 characters and returns a 400 error."</li>
+      <li>"Generate unit tests for <code>src/services/payment.ts</code> that achieve at least 80% branch coverage. Tests must pass on CI."</li>
+      <li>"Scan <code>requirements.txt</code> for packages with known CVSS 7+ vulnerabilities and open an issue for each one with remediation guidance."</li>
+    </ul>
+
+    <h3>The Checklist for Well-Defined Tasks</h3>
+    <p>When writing a task for an agent, check that it includes:</p>
+    <ol>
+      <li><strong>Scope:</strong> Which files or services are in scope?</li>
+      <li><strong>Action:</strong> What exactly should the agent do?</li>
+      <li><strong>Constraints:</strong> What must the agent NOT do?</li>
+      <li><strong>Quality bar:</strong> How do we know it's done well?</li>
+      <li><strong>Output format:</strong> What does the deliverable look like?</li>
+    </ol>
+
+    <div class="code-block"># ❌ Weak task
+Task: Fix the error handling in the API
+
+# ✅ Well-defined task
+Task: Improve error handling in src/routes/users.ts
+
+Scope:
+  - File: src/routes/users.ts
+  - Do not modify any other files
+
+Action:
+  - Wrap each route handler in a try/catch block
+  - Return consistent JSON error responses: { "error": string, "code": integer }
+  - Log each error with context using the existing logger
+
+Constraints:
+  - Do not change the route signatures or response shapes for success cases
+  - Do not add external dependencies
+
+Quality bar:
+  - All existing tests must still pass
+  - New error responses must match the format in /docs/api-errors.md
+  - No lint warnings introduced</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SVG DIAGRAM: Issue -> Branch -> Agent -> PR -> Checks ->     -->
+  <!--             Review -> Merge Flow                             -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>The Agentic SDLC Flow</h2>
+    <p>Here's the complete end-to-end workflow that Domain 1 expects you to understand. An issue triggers a branch, an agent works on it, opens a PR, checks run, a human reviews, and changes are merged. Every step has a governance point.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 840 240" xmlns="http://www.w3.org/2000/svg" style="max-width:840px">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+          </marker>
+          <marker id="arrow-done" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#059669"/>
+          </marker>
+        </defs>
+
+        <!-- Row 1: Issue -> Branch -> Agent -> PR -->
+        <rect x="10" y="20" width="100" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+        <text x="60" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">Issue</text>
+
+        <line x1="110" y1="45" x2="150" y2="45" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <rect x="155" y="20" width="100" height="50" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+        <text x="205" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">Branch</text>
+
+        <line x1="255" y1="45" x2="295" y2="45" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <rect x="300" y="20" width="100" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+        <text x="350" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">Agent</text>
+
+        <line x1="400" y1="45" x2="440" y2="45" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <rect x="445" y="20" width="100" height="50" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="495" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">PR</text>
+
+        <!-- Arrow down from PR to row 2 -->
+        <line x1="495" y1="70" x2="495" y2="100" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Row 2: Checks -> Review -> Merge -->
+        <rect x="420" y="105" width="110" height="50" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+        <text x="475" y="131" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">Status Checks</text>
+
+        <line x1="530" y1="130" x2="570" y2="130" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <rect x="575" y="105" width="110" height="50" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+        <text x="630" y="131" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b">Review</text>
+
+        <line x1="685" y1="130" x2="725" y2="130" stroke="#059669" stroke-width="2" marker-end="url(#arrow-done)"/>
+
+        <rect x="730" y="105" width="100" height="50" rx="8" fill="#059669" stroke="#047857" stroke-width="2"/>
+        <text x="780" y="131" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Merge</text>
+
+        <!-- Governance annotations below each step -->
+        <text x="60" y="90" text-anchor="middle" font-size="10" fill="#64748b">Issue templates</text>
+        <text x="350" y="90" text-anchor="middle" font-size="10" fill="#64748b">Plan-review gate</text>
+        <text x="475" y="168" text-anchor="middle" font-size="10" fill="#64748b">PR rulesets + actions</text>
+        <text x="630" y="168" text-anchor="middle" font-size="10" fill="#64748b">CODEOWNERS approval</text>
+        <text x="780" y="168" text-anchor="middle" font-size="10" fill="#64748b">Branch protection</text>
+      </svg>
+      <div class="diagram-caption">Figure 1: End-to-end agentic SDLC flow with governance controls at every step. Each box represents a stage with a human or automated gate.</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: PR-Based Governance                               -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. PR-Based Governance</h2>
+    <p>Pull Requests are the <strong>primary governance mechanism</strong> for agent actions. Every change an agent makes should flow through a PR — never a direct push. This gives you a structured system of checks and balances.</p>
+
+    <h3>PR Templates</h3>
+    <p>Templates ensure agents produce consistent, reviewable PRs. An agent-generated PR should follow the same template as a human PR, describing what changed and why:</p>
+
+    <div class="code-block"># .github/PULL_REQUEST_TEMPLATE.md
+## Summary
+&lt;!-- Agent: Summarize the changes in 2-3 sentences --&gt;
+
+## Changes
+- [ ] Feature
+- [ ] Bug fix
+- [ ] Refactor
+- [ ] Tests
+
+## Files Modified
+&lt;!-- Agent: List changed files --&gt;
+
+## Testing
+- [ ] Unit tests added/passed
+- [ ] Integration tests passed
+- [ ] Manual testing performed
+
+## Agent Metadata
+- **Agent ID:** {{ agent_id }}
+- **Task ID:** {{ task_id }}
+- **Autonomy Level:** {{ autonomy_level }}</div>
+
+    <h3>Required Status Checks</h3>
+    <p>Every agent PR should require passing checks before merge. This includes CI jobs, linting, security scanning, and test coverage thresholds:</p>
+
+    <div class="code-block"># Branch protection rule (configured in repo settings or rulesets)
+- Require status checks before merging:
+  ✅ build-and-test (ubuntu-latest)
+  ✅ lint-and-format
+  ✅ security-scan (codeql)
+  ✅ coverage-check (>= 80%)
+- Require at least 1 approval from CODEOWNERS
+- Block merge if any check fails</div>
+
+    <h3>CODEOWNERS</h3>
+    <p>CODEOWNERS files define who (or which team) must approve changes to specific files. This is critical when an agent touches sensitive code paths:</p>
+
+    <div class="code-block"># .github/CODEOWNERS
+# Global owners for review
+* @core-team
+
+# Security-critical paths require security team approval
+src/auth/** @security-team
+src/secrets/** @security-team
+
+# Deployment configs require platform team
+deploy/** @platform-team
+infra/** @platform-team
+
+# Agent-specific code is owned by the AI-Infra team
+.github/agents/** @ai-infra-team</div>
+
+    <h3>Rulesets and Environment Gates</h3>
+    <p>Repository <strong>rulesets</strong> allow you to enforce fine-grained policies — like requiring a 6-hour cool-down period before merging agent PRs, or requiring approval from two different teams. <strong>Environment protection rules</strong> gate deployments to production behind manual approvals, ensuring an agent can't promote a build without a human saying "go."</p>
+
+    <div class="callout tip">
+      <p><strong>🔑 Exam Tip:</strong> You'll be asked to choose the right governance mechanism for a scenario. If the scenario says "prevent direct pushes to main" — that's a <strong>branch protection rule</strong>. If it says "require specific reviewers for security files" — that's <strong>CODEOWNERS</strong>. If it says "require manual approval before production deploy" — that's an <strong>environment gate</strong>. Know the difference.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Reliable Workflows: Outputs, Contexts, Triggers,  -->
+  <!--             and Cross-Job Handoffs                           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Reliable Workflows</h2>
+    <p>Reliable agent workflows are built on four pillars: <strong>outputs, contexts, triggers, and cross-job handoffs</strong>. Let's break each one down.</p>
+
+    <h3>Outputs</h3>
+    <p>Every job in a workflow can produce outputs that downstream jobs consume. This is how you pass data like plan summaries, test results, or artifact paths between jobs:</p>
+
+    <div class="code-block">jobs:
+  agent-plan:
+    runs-on: ubuntu-latest
+    outputs:
+      plan_summary: ${{ steps.generate.outputs.summary }}
+      branch_name: ${{ steps.create_branch.outputs.branch }}
+    steps:
+      - id: generate
+        run: echo "summary=Fix null-pointer in UserService.process()" >> $GITHUB_OUTPUTS
+      - id: create_branch
+        run: echo "branch=fix-null-ptr-user-service" >> $GITHUB_OUTPUTS
+
+  agent-execute:
+    needs: [agent-plan]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Executing plan: ${{ needs.agent-plan.outputs.plan_summary }}"
+          echo "On branch: ${{ needs.agent-plan.outputs.branch_name }}"</div>
+
+    <h3>Contexts</h3>
+    <p>GitHub Actions provides rich contextual information — <code>github</code> (event payload, repo, actor), <code>env</code> (environment variables), <code>vars</code> (organization/repo variables), and <code>secrets</code> (sensitive values). Agents use these contexts to make decisions:</p>
+
+    <div class="code-block">steps:
+  - name: Agent reads context
+    run: |
+      echo "Event: ${{ github.event_name }}"
+      echo "Branch: ${{ github.ref_name }}"
+      echo "Actor: ${{ github.actor }}"
+      echo "SHA: ${{ github.sha }}"
+      echo "Repo: ${{ github.repository }}"
+      
+      # Use contexts in conditional logic
+      if [ "${{ github.actor }}" == "github-actions[bot]" ]; then
+        echo "This is an automated agent run"
+      fi</div>
+
+    <h3>Triggers</h3>
+    <p>Workflows can be triggered by <strong>events</strong> (push, pull_request, issues, schedule), <strong>workflow_dispatch</strong> (manual), <strong>workflow_run</strong> (chained), or <strong>repository_dispatch</strong> (external webhook). Each trigger type serves a different purpose for agent workflows:</p>
+
+    <div class="code-block"># Trigger on issue creation (planning phase)
+on:
+  issues:
+    types: [opened, labeled]
+
+# Trigger on PR from an agent branch
+on:
+  pull_request:
+    branches: [agent-*]
+
+# Chain workflows: execution runs after plan approval
+on:
+  workflow_run:
+    workflows: ["Agent Plan"]
+    types: [completed]
+
+# External trigger (e.g., from an agent orchestrator)
+on:
+  repository_dispatch:
+    types: [agent-execute-task]</div>
+
+    <h3>Cross-Job Handoffs with <code>needs</code></h3>
+    <p>The <code>needs</code> keyword creates a DAG (directed acyclic graph) of job dependencies. A downstream job only runs after its upstream dependencies succeed. This is essential for multi-step agent flows:</p>
+
+    <div class="code-block">jobs:
+  validate-input:
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.check.outputs.is_valid }}
+    steps:
+      - id: check
+        run: echo "is_valid=true" >> $GITHUB_OUTPUTS
+
+  generate-code:
+    needs: [validate-input]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Generating code..."
+
+  run-tests:
+    needs: [generate-code]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Running tests..."
+
+  create-pr:
+    needs: [run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Creating PR..."
+      # If run-tests fails, create-pr never executes
+
+  notify:
+    if: always()
+    needs: [create-pr]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Pipeline completed. Status: ${{ job.status }}"</div>
+
+    <p>Notice the <code>notify</code> job uses <code>if: always()</code> — this is a reliability pattern that ensures notification even if upstream jobs fail. We'll cover more reliability patterns next.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 9: Agent Operations                                  -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>9. Agent Operations: Observability, Governance &amp; Reliability</h2>
+    <p>The final section of Domain 1 covers the operational side — how you run agents reliably in production. This includes observability, tool governance, secrets management, hooks, and reliability patterns.</p>
+
+    <h3>Observability</h3>
+    <p>You can't manage what you can't see. Every agent action should produce structured logs that feed into your observability stack. Key metrics to track:</p>
+    <ul>
+      <li><strong>Execution time</strong> per task — detect slowdowns</li>
+      <li><strong>Success/failure rate</strong> — spot regressions</li>
+      <li><strong>Tool call frequency</strong> — identify abuse patterns</li>
+      <li><strong>Human intervention rate</strong> — measure autonomy effectiveness</li>
+      <li><strong>Token usage / API costs</strong> — track resource consumption</li>
+    </ul>
+
+    <div class="code-block"># Structured logging example
+{
+  "timestamp": "2026-06-01T14:30:00Z",
+  "agent_id": "fixer-agent-v2",
+  "session_id": "sess_abc123",
+  "event": "tool_call",
+  "tool": "file_writer",
+  "target": "src/auth/login.ts",
+  "duration_ms": 342,
+  "success": true,
+  "tokens_used": 1250,
+  "cost_usd": 0.025
+}</div>
+
+    <h3>Tool Governance</h3>
+    <p>Not all tools should be available to all agents. Tool governance means defining <strong>allow lists</strong> and <strong>deny lists</strong> at the agent level, and auditing tool usage. A common approach:</p>
+    <ul>
+      <li><strong>Allow lists:</strong> Only approved tools can be called (e.g., <code>file_reader</code>, <code>file_writer</code>, <code>command_runner</code>).</li>
+      <li><strong>Deny lists:</strong> Explicitly dangerous tools are blocked (e.g., <code>sudo</code>, <code>rm -rf</code>, network scanners).</li>
+      <li><strong>Rate limits:</strong> Cap the number of tool calls per minute to prevent runaway agents.</li>
+    </ul>
+
+    <h3>Secrets Management</h3>
+    <p>Agents should <strong>never</strong> have direct access to secrets. Instead, use GitHub Actions secrets and pass them only when needed. Never log or expose secrets in output:</p>
+
+    <div class="code-block">steps:
+  - name: Agent uses a secret via environment variable
+    env:
+      # Secret is injected by GitHub, not by the agent
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+    run: |
+      # Agent can use DEPLOY_KEY but cannot read it
+      echo "Deploying with key length: ${#DEPLOY_KEY}"
+      # ❌ Never do this: echo "Key is $DEPLOY_KEY"
+      # ✅ Safe: use the key via the tool that accepts it
+
+  - name: Install SSH key securely
+    uses: webfactory/ssh-agent@v0.9.0
+    with:
+      ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}</div>
+
+    <h3>Hooks</h3>
+    <p>Hooks allow you to inject custom logic at key points in the agent lifecycle — before a tool runs, after a tool completes, or when an error occurs. This is how you enforce governance policies:</p>
+
+    <div class="code-block"># Hook configuration in agent config
+hooks:
+  pre_tool:
+    - name: validate_file_path
+      script: |
+        if [[ "$TOOL_TARGET" != src/* && "$TOOL_TARGET" != tests/* ]]; then
+          echo "ERROR: Agent attempted to modify unauthorized path: $TOOL_TARGET"
+          exit 1
+        fi
+  post_tool:
+    - name: log_usage
+      script: |
+        echo "Agent $AGENT_ID called $TOOL_NAME on $TOOL_TARGET in $(duration)s"
+  on_error:
+    - name: notify_team
+      script: |
+        curl -X POST -H "Content-Type: application/json" \
+          -d '{"text":"Agent $AGENT_ID failed: $ERROR_MESSAGE"}' \
+          ${{ secrets.SLACK_WEBHOOK }}</div>
+
+    <h3>Reliability Patterns</h3>
+    <p>Production agent systems need reliability engineering. Here are the key patterns:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Pattern</th>
+          <th>Description</th>
+          <th>Implementation</th>
+        </tr>
+        <tr>
+          <td><strong>Retry with Backoff</strong></td>
+          <td>Automatically retry failed operations with increasing delay</td>
+          <td>Exponential backoff: 1s, 2s, 4s, 8s — max 5 retries</td>
+        </tr>
+        <tr>
+          <td><strong>Circuit Breaker</strong></td>
+          <td>Stop calling a failing service after N consecutive failures</td>
+          <td>After 10 failures, open circuit for 60s, then half-open test</td>
+        </tr>
+        <tr>
+          <td><strong>Dead Letter Queue</strong></td>
+          <td>Route failed tasks to a separate queue for human review</td>
+          <td>Create an issue with failure details and assign to on-call</td>
+        </tr>
+        <tr>
+          <td><strong>Timeout Enforcement</strong></td>
+          <td>Prevent agents from running indefinitely</td>
+          <td>Set max execution time per step (e.g., 5 minutes)</td>
+        </tr>
+        <tr>
+          <td><strong>Checkpointing</strong></td>
+          <td>Save agent state at regular intervals for resume capability</td>
+          <td>Persist session state to GitHub Artifacts or external store</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout success">
+      <p><strong>✅ Key Insight:</strong> The exam considers agent operations as a <strong>systems engineering</strong> problem, not an AI problem. The same reliability patterns you'd apply to a microservice (retries, circuit breakers, timeouts) apply to agents. If an answer choice describes an agent architecture without mentioning observability or error handling, it's incomplete.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SUMMARY CALLOUT                                              -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <div class="callout tip">
+      <p><strong>🎓 Instructor Summary — Domain 1 Exam Checklist</strong></p>
+      <p>Before moving on, make sure you can answer these questions:</p>
+      <ol>
+        <li>Which SDLC stages are good for agents and which need human oversight?</li>
+        <li>Can you name all four anti-patterns and explain how to fix each one?</li>
+        <li>What's the difference between a plan and execution, and why must they be separated?</li>
+        <li>What are the three autonomy levels and what operations does each allow?</li>
+        <li>How do you write a well-defined task for an agent?</li>
+        <li>What governance mechanisms does a PR provide (templates, checks, CODEOWNERS, rulesets, environment gates)?</li>
+        <li>How do you chain workflows using <code>needs</code> and pass data between jobs?</li>
+        <li>What five reliability patterns apply to agent operations?</li>
+      </ol>
+      <p>If you can confidently answer all eight, you're ready for Domain 1 questions.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- BOTTOM NAV                                                   -->
+  <!-- ============================================================ -->
+  <div class="nav-links">
+    <a href="index.html">&larr; Home</a>
+    <a href="domain-2.html">Domain 2: Tooling &amp; MCP &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 1 &middot; Based on official Microsoft Learn modules</p>
+</footer>
+
+</body>
+</html>

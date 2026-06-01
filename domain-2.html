@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 2: Tool Use, MCP &amp; Environment Interaction — GH-600 Study</title>
+<meta name="description" content="Domain 2 lesson page for GH-600: Tool Use, MCP & Environment Interaction — the heaviest domain at 20-25%. Instructor-style guide with SVG diagrams, code examples, and exam-focused content">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html" class="active">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 2 · Weight: 20-25% ★ Heaviest</div>
+  <h1>Tool Use, MCP &amp;<br>Environment Interaction</h1>
+  <p>This is the single most important domain on the exam — a full quarter of your score. Master the five core tools, MCP architecture, agent profile configuration, execution contexts, and safe execution patterns. Every scenario question in this domain tests whether you can choose the <em>right tool with the right permission</em> for the job.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 0: Domain Overview                                    -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>0. Why Domain 2 Matters Most</h2>
+    <p>Welcome, student. If you only have time to master one domain on the GH-600, make it this one. Domain 2 is weighted at <strong>20-25%</strong> — the heaviest of all six domains. That means you can expect roughly <strong>11-14 questions</strong> on tool use, MCP, and environment interaction out of the 56 total.</p>
+    <p>In this lesson, I'm going to teach you the exact mental model the exam uses. By the time you finish, you'll know:</p>
+    <ul>
+      <li>Which tool to use in every scenario — and why <em>least privilege</em> is the deciding factor</li>
+      <li>How MCP servers extend agent capabilities and how to configure them</li>
+      <li>Every exam-critical file path (you <strong>must</strong> memorize these)</li>
+      <li>How CI integration works with the Copilot CLI and token-based authentication</li>
+      <li>Safe execution patterns — retries, rollbacks, escalation paths</li>
+    </ul>
+    <p>Let's dive in.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: The 5 Core Tools + Web & Todo Tools               -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. The Five Core Tools + Web &amp; Todo Tools</h2>
+
+    <p>Every GitHub Copilot agent (whether in the IDE, CLI, or a custom agent) gets access to a set of <strong>tools</strong>. Tools are how the agent interacts with the outside world — reading files, searching code, editing source, running commands, and even spawning sub-agents. The exam expects you to know the five core tools cold, plus two context-specific ones.</p>
+
+    <h3>The Five Core Tools (Ranked by Permission Level)</h3>
+    <p>These tools form a <strong>permission hierarchy</strong>. The rule is simple: <em>always use the least privileged tool that can accomplish the task.</em> This is called <strong>least-privilege tool selection</strong>, and it's the single most tested concept in Domain 2.</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Tool</th>
+          <th>Permission Level</th>
+          <th>What It Does</th>
+          <th>When to Use</th>
+        </tr>
+        <tr>
+          <td><strong>read</strong></td>
+          <td>🟢 Read-only</td>
+          <td>Read files and directories from the workspace</td>
+          <td>You need to <em>see</em> code but not change it</td>
+        </tr>
+        <tr>
+          <td><strong>search</strong></td>
+          <td>🟢 Read-only</td>
+          <td>Search code, issues, PRs, and repository content via semantic or regex matching</td>
+          <td>You need to <em>find</em> something before you can read it</td>
+        </tr>
+        <tr>
+          <td><strong>edit</strong></td>
+          <td>🟡 Write (local files)</td>
+          <td>Create, modify, or delete files in the workspace</td>
+          <td>You need to <em>change</em> code, but don't need to run anything</td>
+        </tr>
+        <tr>
+          <td><strong>execute</strong></td>
+          <td>🟠 Write + Execute</td>
+          <td>Run shell commands, scripts, tests, and build commands in the workspace</td>
+          <td>You need to <em>run</em> code — build, test, lint, install dependencies</td>
+        </tr>
+        <tr>
+          <td><strong>agent</strong></td>
+          <td>🔴 Highest autonomy</td>
+          <td>Delegate tasks to a sub-agent (a new agent loop with its own toolchain)</td>
+          <td>You need to <em>parallelize</em> complex multi-step work or use specialized sub-agents</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>The Web Tool</h3>
+    <p>The <strong>web</strong> tool allows the agent to make HTTP requests to external URLs. This is available only when the agent has <strong>execute</strong> permission or a specific <code>web</code> tool grant in its profile. It's used for fetching documentation, checking APIs, or scraping public web pages. <em>Critical exam note:</em> The web tool is <strong>not available by default</strong> — it must be explicitly enabled in the agent profile.</p>
+
+    <h3>The Todo Tool</h3>
+    <p>The <strong>todo</strong> tool is a lightweight task-management helper that lets the agent create, list, update, and close todo items within a workspace session. It's available only when the agent is operating in a <strong>GitHub Workspace</strong> or <strong>Codespaces</strong> environment. Outside those contexts, the todo tool doesn't exist.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The Decision Tree:</strong> On the exam, when you see "which tool should the agent use?" walk through this: <em>Can I just look at the data?</em> → <strong>read</strong>. <em>Do I need to find something first?</em> → <strong>search</strong>. <em>Do I need to change a file?</em> → <strong>edit</strong>. <em>Do I need to run a command?</em> → <strong>execute</strong>. <em>Do I need a sub-agent to manage complexity?</em> → <strong>agent</strong>. Never choose execute when edit will do — that privilege creep is a classic wrong answer.</p>
+    </div>
+
+    <h3>Tool Permission Decision Tree</h3>
+    <p>Here's the exact mental model. Follow the arrows from top to bottom. The answer is the <em>first</em> tool that matches your task's requirements:</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tool permission decision tree">
+        <defs>
+          <linearGradient id="bgGrad2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f0f9ff" />
+            <stop offset="100%" stop-color="#e0f2fe" />
+          </linearGradient>
+          <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+          <linearGradient id="yellowGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d97706" />
+            <stop offset="100%" stop-color="#f59e0b" />
+          </linearGradient>
+          <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ea580c" />
+            <stop offset="100%" stop-color="#f97316" />
+          </linearGradient>
+          <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#dc2626" />
+            <stop offset="100%" stop-color="#ef4444" />
+          </linearGradient>
+          <filter id="shadow2">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".15" />
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="760" height="520" rx="10" fill="url(#bgGrad2)" />
+
+        <!-- Start / Question -->
+        <ellipse cx="380" cy="40" rx="100" ry="22" fill="#1e293b" filter="url(#shadow2)" />
+        <text x="380" y="45" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">What does the task need?</text>
+
+        <!-- Arrow down -->
+        <line x1="380" y1="62" x2="380" y2="82" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="375,78 380,88 385,78" fill="#94a3b8" />
+
+        <!-- Decision diamond: Read only? -->
+        <polygon points="380,85 460,120 380,155 300,120" fill="#fff" stroke="#059669" stroke-width="2.5" filter="url(#shadow2)" />
+        <text x="380" y="117" text-anchor="middle" fill="#059669" font-size="12" font-weight="700" font-family="Inter,sans-serif">Read only?</text>
+        <text x="380" y="132" text-anchor="middle" fill="#059669" font-size="11" font-family="Inter,sans-serif">Just need to see code?</text>
+
+        <!-- YES -> Read -->
+        <line x1="460" y1="120" x2="530" y2="120" stroke="#059669" stroke-width="2" />
+        <polygon points="526,115 536,120 526,125" fill="#059669" />
+        <text x="495" y="112" text-anchor="middle" fill="#059669" font-size="11" font-weight="700" font-family="Inter,sans-serif">YES</text>
+
+        <rect x="540" y="105" width="80" height="30" rx="15" fill="url(#greenGrad)" filter="url(#shadow2)" />
+        <text x="580" y="124" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">read</text>
+
+        <!-- NO -> down to search -->
+        <line x1="300" y1="120" x2="230" y2="120" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="234,115 224,120 234,125" fill="#94a3b8" />
+        <text x="265" y="112" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700" font-family="Inter,sans-serif">NO</text>
+
+        <line x1="224" y1="120" x2="224" y2="215" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="219,211 224,221 229,211" fill="#94a3b8" />
+
+        <!-- Decision diamond: Need to find? -->
+        <polygon points="224,218 304,253 224,288 144,253" fill="#fff" stroke="#059669" stroke-width="2.5" filter="url(#shadow2)" />
+        <text x="224" y="250" text-anchor="middle" fill="#059669" font-size="12" font-weight="700" font-family="Inter,sans-serif">Need to find?</text>
+        <text x="224" y="265" text-anchor="middle" fill="#059669" font-size="11" font-family="Inter,sans-serif">Search code or issues?</text>
+
+        <!-- YES -> Search -->
+        <line x1="304" y1="253" x2="374" y2="253" stroke="#059669" stroke-width="2" />
+        <polygon points="370,248 380,253 370,258" fill="#059669" />
+        <text x="339" y="245" text-anchor="middle" fill="#059669" font-size="11" font-weight="700" font-family="Inter,sans-serif">YES</text>
+
+        <rect x="384" y="238" width="80" height="30" rx="15" fill="url(#greenGrad)" filter="url(#shadow2)" />
+        <text x="424" y="257" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">search</text>
+
+        <!-- NO -> down to edit -->
+        <line x1="144" y1="253" x2="144" y2="315" stroke="#94a3b8" stroke-width="2" />
+        <line x1="144" y1="315" x2="144" y2="345" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="139,341 144,351 149,341" fill="#94a3b8" />
+        <text x="144" y="308" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700" font-family="Inter,sans-serif">NO</text>
+
+        <!-- Decision diamond: Need to change? -->
+        <polygon points="144,348 224,383 144,418 64,383" fill="#fff" stroke="#d97706" stroke-width="2.5" filter="url(#shadow2)" />
+        <text x="144" y="380" text-anchor="middle" fill="#d97706" font-size="12" font-weight="700" font-family="Inter,sans-serif">Need to change?</text>
+        <text x="144" y="395" text-anchor="middle" fill="#d97706" font-size="11" font-family="Inter,sans-serif">Modify files?</text>
+
+        <!-- YES -> Edit -->
+        <line x1="224" y1="383" x2="294" y2="383" stroke="#d97706" stroke-width="2" />
+        <polygon points="290,378 300,383 290,388" fill="#d97706" />
+        <text x="259" y="375" text-anchor="middle" fill="#d97706" font-size="11" font-weight="700" font-family="Inter,sans-serif">YES</text>
+
+        <rect x="304" y="368" width="75" height="30" rx="15" fill="url(#yellowGrad)" filter="url(#shadow2)" />
+        <text x="341" y="387" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">edit</text>
+
+        <!-- NO -> down to execute -->
+        <line x1="64" y1="383" x2="64" y2="435" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="59,431 64,441 69,431" fill="#94a3b8" />
+        <text x="64" y="428" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700" font-family="Inter,sans-serif">NO</text>
+
+        <!-- Decision diamond: Need to run? -->
+        <polygon points="144,438 224,473 144,508 64,473" fill="#fff" stroke="#ea580c" stroke-width="2.5" filter="url(#shadow2)" />
+        <text x="144" y="470" text-anchor="middle" fill="#ea580c" font-size="12" font-weight="700" font-family="Inter,sans-serif">Need to run?</text>
+        <text x="144" y="485" text-anchor="middle" fill="#ea580c" font-size="11" font-family="Inter,sans-serif">Execute commands?</text>
+
+        <!-- YES -> Execute -->
+        <line x1="224" y1="473" x2="294" y2="473" stroke="#ea580c" stroke-width="2" />
+        <polygon points="290,468 300,473 290,478" fill="#ea580c" />
+        <text x="259" y="465" text-anchor="middle" fill="#ea580c" font-size="11" font-weight="700" font-family="Inter,sans-serif">YES</text>
+
+        <rect x="304" y="458" width="95" height="30" rx="15" fill="url(#orangeGrad)" filter="url(#shadow2)" />
+        <text x="351" y="477" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">execute</text>
+
+        <!-- NO -> Agent -->
+        <line x1="64" y1="473" x2="64" y2="473" stroke="#94a3b8" stroke-width="0" />
+        <!-- NO arrow from execute diamond -->
+        <line x1="64" y1="473" x2="-10" y2="473" stroke="#94a3b8" stroke-width="2" />
+        <polygon points="-6,468 -16,473 -6,478" fill="#94a3b8" />
+        <text x="29" y="465" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700" font-family="Inter,sans-serif">NO</text>
+
+        <rect x="-90" y="458" width="80" height="30" rx="15" fill="url(#redGrad)" filter="url(#shadow2)" />
+        <text x="-50" y="477" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">agent</text>
+        <text x="-50" y="500" text-anchor="middle" fill="#dc2626" font-size="10" font-weight="600" font-family="Inter,sans-serif">(sub-agent handoff)</text>
+      </svg>
+      <div class="diagram-caption">Figure 2.1 — Tool Permission Decision Tree: follow the arrows from top to bottom, picking the least-privileged tool that meets your task's needs.</div>
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Alert:</strong> The exam will present scenarios where you must choose between <strong>execute</strong> and <strong>edit</strong>. Example: "The agent needs to add a new function to auth.py." The correct answer is <strong>edit</strong>, not execute — you only need to write a file, not run a shell command. If the answer says "use execute to create the file," that's a trap! Execute is for running commands, not editing files.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Agent Profile Configuration                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. Agent Profile Configuration</h2>
+
+    <p>Every custom agent on GitHub is defined by an <strong>agent profile</strong> — a Markdown file with YAML frontmatter stored at <code>.github/agents/*.agent.md</code>. This is how you declare what tools the agent has access to, which MCP servers it can call, which model it uses, and more.</p>
+
+    <p>Let me walk you through the anatomy of an agent profile:</p>
+
+    <div class="code-block">---
+description: >
+  My code review assistant that checks for security
+  vulnerabilities and suggests fixes.
+name: security-reviewer
+tools:
+  - read
+  - search
+  - edit
+mcp-servers:
+  - vulnerability-db
+target: github-actions
+model: gpt-4o
+disable-model-invocation: false
+---
+
+# Security Reviewer Agent
+
+This agent reviews pull requests for security issues.
+It checks for OWASP Top 10 patterns and suggests fixes.
+    </div>
+
+    <h3>Frontmatter Keys — What Each One Does</h3>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Key</th>
+          <th>Required?</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td><strong>description</strong></td>
+          <td><span style="color:#dc2626;font-weight:700">✅ Required</span></td>
+          <td>A human-readable description of the agent's purpose. This is what appears in the agent picker UI and is used by the system to match tasks to agents.</td>
+        </tr>
+        <tr>
+          <td><strong>name</strong></td>
+          <td>Optional</td>
+          <td>A short identifier for the agent. If omitted, the filename is used (minus <code>.agent.md</code>).</td>
+        </tr>
+        <tr>
+          <td><strong>tools</strong></td>
+          <td>Optional</td>
+          <td>List of tools the agent is allowed to use. If omitted, the agent gets the default toolset (read, search, edit). <strong>This is the primary way you enforce least privilege.</strong></td>
+        </tr>
+        <tr>
+          <td><strong>mcp-servers</strong></td>
+          <td>Optional</td>
+          <td>List of MCP server names the agent can call. These are defined in <code>.mcp.json</code> or <code>.github/mcp.json</code>. If omitted, the agent cannot use any MCP servers.</td>
+        </tr>
+        <tr>
+          <td><strong>target</strong></td>
+          <td>Optional</td>
+          <td>Where the agent runs. Common values: <code>github-actions</code> (for CI), <code>codespaces</code> (for dev environments), or <code>cli</code> (for local CLI usage).</td>
+        </tr>
+        <tr>
+          <td><strong>model</strong></td>
+          <td>Optional</td>
+          <td>Which model powers this agent (e.g., <code>gpt-4o</code>, <code>claude-sonnet-4</code>). If omitted, the organization's default model is used.</td>
+        </tr>
+        <tr>
+          <td><strong>disable-model-invocation</strong></td>
+          <td>Optional</td>
+          <td>Boolean. When set to <code>true</code>, the agent <strong>cannot call other models</strong> — it's locked to its assigned model. This is a security control to prevent model-hopping.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — The description field:</strong> The exam loves to test that <code>description</code> is the <strong>only required</strong> field in frontmatter. Everything else is optional. If you see an agent profile missing <code>name</code>, <code>tools</code>, or <code>model</code>, that's fine — but if it's missing <code>description</code>, it's invalid. Remember: <em>description is mandatory, everything else is gravy.</em></p>
+    </div>
+
+    <h3>Tools in the Profile — Granular Control</h3>
+    <p>Each tool in the <code>tools</code> list can also be configured with sub-options for even finer-grained access control. For example, you might grant <code>execute</code> but restrict it to only <code>npm test</code> or specific directories. This is the <strong>least privilege</strong> principle applied at the configuration level.</p>
+
+    <div class="code-block">---
+description: Build and test agent for CI pipelines
+name: ci-builder
+tools:
+  - read
+  - edit
+  - execute:
+      commands:
+        - npm test
+        - npm run build
+      directories:
+        - src/
+        - tests/
+mcp-servers: []
+target: github-actions
+model: gpt-4o
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> Some questions will describe an agent profile with <code>tools: [read, search, edit, execute, agent]</code> — ALL five tools — and ask if this is appropriate. Unless the agent needs all five (rare), this is an over-privileged profile. The correct approach is to grant <strong>only the tools the agent actually needs</strong>.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: ALL Exam-Critical Artifact Paths                   -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Exam-Critical Artifact Paths (Memorize These)</h2>
+
+    <p>Now we come to one of the most <strong>memorization-heavy</strong> parts of the exam. There are a set of file paths in the GitHub ecosystem that serve specific purposes. The exam WILL ask you to match the path to its purpose. Let me break them down into logical groups.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Instructor's Note:</strong> I recommend studying these in groups rather than as a flat list. Notice the pattern — many live under <code>.github/</code> because that's GitHub's convention directory for repository configuration.</p>
+    </div>
+
+    <h3>Group 1: Agent &amp; Instructions (Who the Agent Is)</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>File Path</th><th>Purpose</th></tr>
+        <tr>
+          <td><code>.github/copilot-instructions.md</code></td>
+          <td><strong>Copilot-wide instructions.</strong> These are system-level guidelines that apply to ALL Copilot interactions in the repo — IDE, CLI, and agents. Think of this as the "constitution" for how Copilot behaves in this repository.</td>
+        </tr>
+        <tr>
+          <td><code>.github/instructions/*.instructions.md</code></td>
+          <td><strong>Scoped instructions.</strong> Individual instruction files that can be selectively applied to different agents or contexts. More granular than the single <code>copilot-instructions.md</code>.</td>
+        </tr>
+        <tr>
+          <td><code>.github/agents/*.agent.md</code></td>
+          <td><strong>Agent profile definitions.</strong> Each file defines one custom agent — its tools, MCP servers, model, and description. We just covered the anatomy of these files in Section 2.</td>
+        </tr>
+        <tr>
+          <td><code>AGENTS.md</code></td>
+          <td><strong>Agent registry / index.</strong> A top-level file that lists all available agents in the repository. This is the "table of contents" for your agent ecosystem. Agents listed here appear in the GitHub UI agent picker.</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Group 2: Prompts &amp; Skills (What the Agent Does)</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>File Path</th><th>Purpose</th></tr>
+        <tr>
+          <td><code>.github/prompts/*.prompt.md</code></td>
+          <td><strong>Reusable prompt templates.</strong> Pre-written prompts that agents or users can invoke. These are the building blocks for agent behavior — think of them as "functions" that an agent can call.</td>
+        </tr>
+        <tr>
+          <td><code>.github/skills/&lt;skill&gt;/SKILL.md</code></td>
+          <td><strong>Skill definition.</strong> A skill is a packaged capability that an agent can learn. Each skill lives in its own subdirectory under <code>.github/skills/</code> and has a <code>SKILL.md</code> file describing its behavior, inputs, and outputs.</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Group 3: Hooks &amp; Workflows (How the Agent Gets Triggered)</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>File Path</th><th>Purpose</th></tr>
+        <tr>
+          <td><code>.github/hooks/*.json</code></td>
+          <td><strong>Agent lifecycle hooks.</strong> JSON files that define behaviors at specific lifecycle events — like <code>pre-agent-run</code>, <code>post-agent-run</code>, <code>on-error</code>. These are the agent equivalent of Git hooks.</td>
+        </tr>
+        <tr>
+          <td><code>.github/workflows/copilot-setup-steps.yml</code></td>
+          <td><strong>CI setup workflow.</strong> A GitHub Actions workflow that runs BEFORE an agent executes in CI. It sets up the environment — installs dependencies, configures tokens, and prepares the workspace.</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Group 4: MCP Configuration (How the Agent Connects to Servers)</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>File Path</th><th>Purpose</th></tr>
+        <tr>
+          <td><code>.mcp.json</code></td>
+          <td><strong>Repository-level MCP configuration.</strong> Defines MCP server connections for the entire repository. This is the primary MCP config file.</td>
+        </tr>
+        <tr>
+          <td><code>.github/mcp.json</code></td>
+          <td><strong>GitHub-scoped MCP configuration.</strong> Same format as <code>.mcp.json</code> but lives in the <code>.github/</code> directory. Used when you want MCP config alongside other GitHub config files.</td>
+        </tr>
+        <tr>
+          <td><code>.vscode/mcp.json</code></td>
+          <td><strong>VS Code-scoped MCP configuration.</strong> MCP server definitions that only apply when the agent runs within VS Code / VS Code Server (including Codespaces). Useful for IDE-specific tooling.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Critical Path Memorization:</strong> The exam will give you scenarios like "Where do you define reusable prompts for your agent?" The answer is <code>.github/prompts/*.prompt.md</code>. Or "Where do you configure MCP servers?" It could be <code>.mcp.json</code>, <code>.github/mcp.json</code>, or <code>.vscode/mcp.json</code> depending on scope. Know the difference between all of them.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: MCP Servers & Architecture                        -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. MCP Architecture &amp; Servers</h2>
+
+    <p><strong>MCP</strong> stands for <strong>Model Context Protocol</strong>. It's an open standard that lets AI agents connect to external tools, data sources, and services through a standardized interface. Think of MCP as the <strong>USB-C for AI agents</strong> — a universal protocol that any agent can use to talk to any service.</p>
+
+    <h3>MCP Architecture Diagram</h3>
+    <p>Here's the architecture you need to understand for the exam. The agent sends a request through the MCP client, which routes it to the correct MCP server, which in turn calls the external service:</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MCP Architecture: Agent to MCP Client to MCP Server to External Service">
+        <defs>
+          <linearGradient id="bgGradMcp" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f5f3ff" />
+            <stop offset="100%" stop-color="#ede9fe" />
+          </linearGradient>
+          <linearGradient id="agentGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#3b82f6" />
+          </linearGradient>
+          <linearGradient id="clientGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed" />
+            <stop offset="100%" stop-color="#8b5cf6" />
+          </linearGradient>
+          <linearGradient id="serverGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+          <linearGradient id="extGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d97706" />
+            <stop offset="100%" stop-color="#f59e0b" />
+          </linearGradient>
+          <filter id="shadow3">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".15" />
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="760" height="340" rx="10" fill="url(#bgGradMcp)" />
+
+        <!-- Title -->
+        <text x="380" y="32" text-anchor="middle" fill="#4c1d95" font-size="15" font-weight="800" font-family="Inter,sans-serif">MCP Architecture — Model Context Protocol</text>
+
+        <!-- Agent box -->
+        <rect x="30" y="55" width="140" height="80" rx="12" fill="url(#agentGrad)" filter="url(#shadow3)" />
+        <text x="100" y="85" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">🤖 Agent</text>
+        <text x="100" y="105" text-anchor="middle" fill="#dbeafe" font-size="10" font-family="Inter,sans-serif">(GitHub Copilot /</text>
+        <text x="100" y="120" text-anchor="middle" fill="#dbeafe" font-size="10" font-family="Inter,sans-serif">Custom Agent)</text>
+
+        <!-- Arrow Agent -> MCP Client -->
+        <line x1="170" y1="95" x2="260" y2="95" stroke="#7c3aed" stroke-width="2.5" />
+        <polygon points="256,90 266,95 256,100" fill="#7c3aed" />
+        <text x="215" y="85" text-anchor="middle" fill="#7c3aed" font-size="10" font-weight="700" font-family="Inter,sans-serif">MCP Request</text>
+
+        <!-- MCP Client box -->
+        <rect x="270" y="55" width="140" height="80" rx="12" fill="url(#clientGrad)" filter="url(#shadow3)" />
+        <text x="340" y="85" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">🔌 MCP Client</text>
+        <text x="340" y="105" text-anchor="middle" fill="#e9d5ff" font-size="10" font-family="Inter,sans-serif">(Protocol Handler,</text>
+        <text x="340" y="120" text-anchor="middle" fill="#e9d5ff" font-size="10" font-family="Inter,sans-serif">Tool Router)</text>
+
+        <!-- Arrow MCP Client -> MCP Server -->
+        <line x1="410" y1="95" x2="500" y2="95" stroke="#059669" stroke-width="2.5" />
+        <polygon points="496,90 506,95 496,100" fill="#059669" />
+        <text x="455" y="85" text-anchor="middle" fill="#059669" font-size="10" font-weight="700" font-family="Inter,sans-serif">Standardized</text>
+        <text x="455" y="108" text-anchor="middle" fill="#059669" font-size="10" font-weight="700" font-family="Inter,sans-serif">Protocol</text>
+
+        <!-- MCP Server box -->
+        <rect x="510" y="55" width="140" height="80" rx="12" fill="url(#serverGrad)" filter="url(#shadow3)" />
+        <text x="580" y="85" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">⚙️ MCP Server</text>
+        <text x="580" y="105" text-anchor="middle" fill="#d1fae5" font-size="10" font-family="Inter,sans-serif">(Tool Adapter,</text>
+        <text x="580" y="120" text-anchor="middle" fill="#d1fae5" font-size="10" font-family="Inter,sans-serif">Service Bridge)</text>
+
+        <!-- Arrow MCP Server -> External Service -->
+        <line x1="650" y1="95" x2="720" y2="95" stroke="#d97706" stroke-width="2.5" />
+        <polygon points="716,90 726,95 716,100" fill="#d97706" />
+
+        <!-- External Service box -->
+        <rect x="700" y="55" width="0" height="0" rx="0" fill="none" />
+
+        <!-- External Service: rounded pill -->
+        <rect x="706" y="62" width="0" height="0" rx="0" fill="none" />
+        </svg>
+    </div>
+
+    <h3>How MCP Servers Work in GitHub</h3>
+    <p>MCP servers in GitHub are configured via <strong>MCP configuration files</strong> (<code>.mcp.json</code>, <code>.github/mcp.json</code>, or <code>.vscode/mcp.json</code>). Each server entry specifies how to connect to the external service — typically a <strong>command</strong> (for local servers) or a <strong>URL</strong> (for remote servers).</p>
+
+    <div class="code-block">{
+  "mcpServers": {
+    "vulnerability-db": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp-servers/vuln-db-server.js"],
+      "env": {
+        "API_KEY": "${VULN_DB_API_KEY}"
+      }
+    },
+    "github-remote": {
+      "type": "remote",
+      "url": "https://mcp.github.com/servers/issues"
+    }
+  }
+}
+    </div>
+
+    <h3>GitHub Remote MCP Server</h3>
+    <p>GitHub provides its own <strong>remote MCP server</strong> that exposes GitHub API capabilities as MCP tools. This allows agents to interact with issues, PRs, repositories, and more through the MCP protocol. The remote MCP server is hosted by GitHub and can be referenced by URL in your MCP configuration.</p>
+
+    <h3>MCP Registries &amp; Allow Lists</h3>
+    <p>Organizations can publish MCP servers to a <strong>registry</strong> (like the GitHub Marketplace or a private registry) for discoverability. To control which MCP servers agents can use, organizations maintain <strong>allow lists</strong> — only servers on the allow list can be invoked by agents. This is a critical security control: just like tools, MCP servers follow the principle of least privilege.</p>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — MCP vs. Direct API:</strong> Why use MCP instead of having the agent call the API directly? Three reasons: (1) <strong>Standardization</strong> — any agent can talk to any MCP server; no custom integration code. (2) <strong>Security</strong> — MCP servers can enforce authentication, rate-limiting, and audit logging. (3) <strong>Discoverability</strong> — agents can discover available tools from the MCP server's capability advertisement. The exam will expect you to know these benefits.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: CI Integration                                    -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. CI Integration — Copilot CLI in Pipelines</h2>
+
+    <p>One of the most powerful features of GitHub Copilot agents is the ability to run them in CI/CD pipelines. The <strong>Copilot CLI</strong> (<code>copilot</code> command) can be invoked inside GitHub Actions workflows, making agents a first-class part of your automated SDLC.</p>
+
+    <h3>The copilot CLI Command</h3>
+    <p>The command you'll use in CI is:</p>
+
+    <div class="code-block">copilot -p "Review this PR for security vulnerabilities" \
+  --agent security-reviewer \
+  --no-ask-user
+    </div>
+
+    <h3>Key Command-Line Flags</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Purpose</th></tr>
+        <tr>
+          <td><code>-p "&lt;prompt&gt;"</code></td>
+          <td>The prompt or instruction for the agent. This tells the agent what to do.</td>
+        </tr>
+        <tr>
+          <td><code>--agent &lt;name&gt;</code></td>
+          <td>Specifies <strong>which agent profile</strong> to use. The name matches the agent defined in <code>.github/agents/*.agent.md</code>. If omitted, the default agent is used.</td>
+        </tr>
+        <tr>
+          <td><code>--no-ask-user</code></td>
+          <td><strong>Critical for CI.</strong> When running non-interactively (no human to answer questions), this flag tells the agent to proceed autonomously without asking for user input. Without this, the CI job would hang waiting for a response that never comes.</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>COPILOT_GITHUB_TOKEN</h3>
+    <p>When running in CI, the Copilot CLI needs a GitHub token with appropriate permissions. This is provided via the <code>COPILOT_GITHUB_TOKEN</code> environment variable. Unlike the standard <code>GITHUB_TOKEN</code> (which has limited, job-scoped permissions), the <code>COPILOT_GITHUB_TOKEN</code> should have the permissions the agent needs to do its job — but no more (least privilege again).</p>
+
+    <div class="code-block">name: Agent Review
+on: [pull_request]
+
+jobs:
+  agent-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Copilot
+        uses: ./.github/workflows/copilot-setup-steps.yml
+
+      - name: Run Agent
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+        run: |
+          copilot -p "Review this PR for security issues" \
+            --agent security-reviewer \
+            --no-ask-user
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap — Token Confusion:</strong> The exam will try to confuse <code>GITHUB_TOKEN</code> and <code>COPILOT_GITHUB_TOKEN</code>. Remember: <code>GITHUB_TOKEN</code> is the automatic, short-lived token GitHub creates for each workflow run. It has limited scope. <code>COPILOT_GITHUB_TOKEN</code> is a <strong>separate token</strong> (usually a PAT or GitHub App token) that you explicitly configure with the permissions the agent needs. If an answer choice says "use the default GITHUB_TOKEN for copilot," it's wrong — you need COPILOT_GITHUB_TOKEN.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Execution Contexts                                -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. Execution Contexts</h2>
+
+    <p>Where and how an agent runs matters enormously for security and governance. The exam tests three execution contexts that you must understand:</p>
+
+    <h3>Repository Scope</h3>
+    <p>When an agent runs with <strong>repository scope</strong>, it has access to the entire repository — all files, all branches, all PRs, all issues. This is the default scope for most agents. It's appropriate for agents that need a broad view of the codebase (like code review or refactoring agents).</p>
+
+    <h3>Branch-Based Scope</h3>
+    <p>With <strong>branch-based scope</strong>, the agent is restricted to a specific branch. It can read files from that branch, create new branches from it, and push changes to it — but it cannot access other branches. This is ideal for agents that work on feature branches or specific fix branches.</p>
+
+    <div class="code-block">---
+description: Feature-specific refactoring agent
+name: feature-refactor
+tools:
+  - read
+  - edit
+target: github-actions
+# Scope is implicitly branch-based when triggered
+# by a branch-based event (push, pull_request)
+---
+    </div>
+
+    <h3>CI Workflow Invocation</h3>
+    <p>When an agent is invoked from a <strong>CI workflow</strong>, it runs in a fresh, ephemeral environment. It has:</p>
+    <ul>
+      <li>A clean filesystem (checked-out repository)</li>
+      <li>Temporary credentials (the <code>COPILOT_GITHUB_TOKEN</code>)</li>
+      <li>No access to the developer's local environment</li>
+      <li>Full audit trail (all actions are logged in workflow run logs)</li>
+    </ul>
+    <p>This is the <strong>safest</strong> execution context because it's fully sandboxed. If the agent does something destructive, it only affects that ephemeral environment.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — Context Choice:</strong> On the exam, when you're asked which execution context is appropriate for a given task, think: <em>Does this agent need to see the whole codebase or just one branch? Does it run in CI (safe) or in the IDE (connected to a developer's local environment)?</em> CI execution is always preferred for autonomous actions because of its sandboxed, auditable nature.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: Safe Execution Patterns                           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. Safe Execution Patterns</h2>
+
+    <p>Agents can make mistakes. The exam tests your knowledge of how to design agent systems that handle failures gracefully. Here are the patterns you need to know:</p>
+
+    <h3>Error Handling</h3>
+    <p>Every tool call can fail. Your agent system should have explicit error handling at every level:</p>
+    <ul>
+      <li><strong>Tool-level errors:</strong> File not found, permission denied, network timeout — the agent should catch these and decide whether to retry or escalate.</li>
+      <li><strong>Application-level errors:</strong> Tests fail, build breaks — the agent should stop and report rather than proceeding blindly.</li>
+      <li><strong>System-level errors:</strong> Environment crash, resource exhaustion — the CI runner or orchestration layer should handle these.</li>
+    </ul>
+
+    <h3>Retries</h3>
+    <p>Transient failures (network blips, rate limits, temporary service unavailability) should be retried. The standard pattern is <strong>exponential backoff with jitter</strong>:</p>
+
+    <div class="code-block"># Retry with exponential backoff
+max_retries = 3
+for attempt in range(max_retries):
+    try:
+        result = tool_call(params)
+        break
+    except TransientError:
+        if attempt == max_retries - 1:
+            escalate_to_human(error)
+            break
+        sleep(2 ** attempt + random.uniform(0, 1))
+    </div>
+
+    <h3>Rollbacks</h3>
+    <p>When an agent makes changes that turn out to be wrong, it should be able to <strong>roll back</strong>. In the GitHub context, the primary rollback mechanism is:</p>
+    <ul>
+      <li><strong>Git revert:</strong> If the agent pushed a commit, create a revert commit.</li>
+      <li><strong>Branch deletion:</strong> If the agent created a branch with bad changes, delete it.</li>
+      <li><strong>PR close without merge:</strong> If the agent opened a PR that hasn't been merged, close it.</li>
+    </ul>
+
+    <h3>Escalation Paths</h3>
+    <p>When an agent cannot resolve an issue (after exhausting retries), it must know who to escalate to. The escalation path is typically:</p>
+    <ol>
+      <li><strong>Retry</strong> — try the operation again (up to N times)</li>
+      <li><strong>Fallback</strong> — use an alternative approach or tool</li>
+      <li><strong>File an issue</strong> — create a GitHub Issue with full error details and assign it to the appropriate team</li>
+      <li><strong>Page the on-call engineer</strong> — for critical failures, trigger an alert via the hook system</li>
+    </ol>
+
+    <div class="code-block">{
+  "on-error": {
+    "max-retries": 3,
+    "retry-delay": "exponential",
+    "escalate-after": "retries-exhausted",
+    "escalation-target": {
+      "type": "issue",
+      "assignee": "security-team",
+      "labels": ["agent-escalation", "auto-filed"]
+    }
+  }
+}
+    </div>
+
+    <div class="callout success">
+      <p><strong>✅ Key Insight — The Exam Pattern:</strong> Whenever you see a scenario question involving an agent failure, the correct answer will almost always include an <strong>escalation path</strong>. Wrong answers will suggest "retry indefinitely" (infinite loops are bad) or "ignore the error" (silent failure is an anti-pattern). Always choose the answer that includes logging + retry (bounded) + escalation.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Autonomous Actions                                -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Autonomous Actions — Creating Branches &amp; PRs</h2>
+
+    <p>The most autonomous thing a GitHub agent can do is <strong>create branches and pull requests</strong> without human intervention. This is where the tool permissions, agent profile, and execution context all come together.</p>
+
+    <h3>Creating a Branch</h3>
+    <p>An agent with <strong>execute</strong> permission can create branches via git commands in the workspace. But more commonly, the agent uses the <strong>GitHub remote MCP server</strong> or direct API calls to create branches through the GitHub API:</p>
+
+    <div class="code-block"># Agent creates a fix branch via execute tool
+git checkout -b fix/auth-timeout
+git commit -m "Fix auth timeout bug"
+git push origin fix/auth-timeout
+    </div>
+
+    <h3>Creating a Pull Request</h3>
+    <p>After the agent has made changes on a branch, it can open a PR. The agent can use the <code>gh</code> CLI (via execute tool) or the GitHub API:</p>
+
+    <div class="code-block"># Agent opens a PR via gh CLI
+gh pr create \
+  --title "Fix auth timeout bug" \
+  --body "Automated fix by security-reviewer agent" \
+  --base main \
+  --head fix/auth-timeout \
+  --label "auto-pr" \
+  --reviewer security-team
+    </div>
+
+    <h3>Autonomy vs. Safety in Autonomous Actions</h3>
+    <p>Creating branches and PRs autonomously is powerful but requires guardrails:</p>
+    <ul>
+      <li><strong>Branch naming conventions:</strong> Enforce patterns like <code>agent/&lt;agent-name&gt;/&lt;description&gt;</code> so agent-created branches are easily identifiable.</li>
+      <li><strong>PR templates:</strong> Require agents to use PR templates that include the agent name, tool list, and a summary of changes.</li>
+      <li><strong>CODEOWNERS:</strong> Set automatic reviewers for agent-created PRs.</li>
+      <li><strong>Rulesets:</strong> Apply branch protection rules that prevent agents from pushing directly to <code>main</code> — agents must always go through PRs.</li>
+    </ul>
+
+    <div class="code-block"># Branch protection ruleset (configured in GitHub UI or as code)
+# Agents can push to agent/* branches but NOT to main
+- pattern: agent/*
+  allows_force_pushes: false
+  requires_pr: false
+
+- pattern: main
+  requires_pr: true
+  required_reviewers: ["security-team"]
+  dismisses_stale_reviews: true
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Critical — Autonomy Levels:</strong> The exam maps autonomy directly to tool permissions: <strong>read/search</strong> = no autonomy (advisory only), <strong>edit</strong> = limited autonomy (can change files but not execute), <strong>execute</strong> = moderate autonomy (can run commands and make changes), <strong>agent</strong> = full autonomy (can delegate to sub-agents). Creating branches and PRs requires at minimum <strong>execute</strong> permission. If an exam question asks what tool an agent needs to open a PR, the answer is <strong>execute</strong> (to run <code>gh pr create</code>).</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 9: Putting It All Together — Scenario Walkthrough     -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>9. Putting It All Together — Scenario Walkthrough</h2>
+
+    <p>Let's walk through a real exam-style scenario to see how all these concepts connect.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Scenario:</strong> Your team wants a "dependency-updater" agent that scans for outdated dependencies, updates them, runs tests, and creates a PR. How do you configure this agent?</p>
+    </div>
+
+    <p><strong>Step 1 — Create the agent profile</strong> at <code>.github/agents/dependency-updater.agent.md</code>:</p>
+
+    <div class="code-block">---
+description: >
+  Scans for outdated dependencies, updates them to latest
+  compatible versions, runs the test suite, and creates a PR.
+name: dependency-updater
+tools:
+  - read
+  - search
+  - edit
+  - execute:    # Needs execute to run npm audit, npm test, and gh pr create
+      commands:
+        - npm audit
+        - npm update
+        - npm test
+        - gh pr create
+mcp-servers:
+  - npm-registry  # To query npm registry for latest versions
+target: github-actions
+model: gpt-4o
+    </div>
+
+    <p><strong>Step 2 — Configure MCP server</strong> in <code>.github/mcp.json</code>:</p>
+
+    <div class="code-block">{
+  "mcpServers": {
+    "npm-registry": {
+      "type": "remote",
+      "url": "https://mcp.npmjs.com/registry"
+    }
+  }
+}
+    </div>
+
+    <p><strong>Step 3 — Create a CI workflow</strong> that runs the agent on a schedule:</p>
+
+    <div class="code-block">name: Dependency Update
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:       # Manual trigger too
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install
+
+      - name: Run Dependency Update Agent
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+        run: |
+          copilot -p "Check for outdated dependencies, \
+            update them, run tests, and create a PR" \
+            --agent dependency-updater \
+            --no-ask-user
+    </div>
+
+    <p><strong>Step 4 — Add guardrails:</strong></p>
+    <ul>
+      <li>Add <code>.github/PULL_REQUEST_TEMPLATE/agent-pr.md</code> so agent-created PRs always include a summary</li>
+      <li>Set up CODEOWNERS so agent PRs are reviewed by the platform team</li>
+      <li>Use rulesets to prevent the agent from pushing directly to <code>main</code></li>
+    </ul>
+
+    <p><strong>Step 5 — Error handling:</strong> Configure a hook at <code>.github/hooks/on-error.json</code> to file an issue if the agent fails:</p>
+
+    <div class="code-block">{
+  "on-error": {
+    "max-retries": 2,
+    "escalate-after": "retries-exhausted",
+    "escalation-target": {
+      "type": "issue",
+      "repository": "my-org/my-repo",
+      "assignee": "platform-team",
+      "labels": ["dependency-update", "agent-failure"]
+    }
+  }
+}
+    </div>
+
+    <div class="callout success">
+      <p><strong>✅ Takeaway:</strong> This scenario touches every concept in Domain 2 — tool selection, agent profiles, MCP servers, CI integration, execution context, safe patterns, and autonomous actions. If you can walk through this scenario confidently, you're well-prepared for the exam questions.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SUMMARY CHECKLIST                                            -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <div class="callout tip">
+      <p><strong>🎓 Instructor Summary — Domain 2 Exam Checklist</strong></p>
+      <p>Before moving on, make sure you can answer these ten questions. If any are fuzzy, review that section again:</p>
+      <ol>
+        <li>What are the five core tools, ranked by permission level? When should each be used?</li>
+        <li>What are the web and todo tools, and what contexts do they require?</li>
+        <li>What is the format and location of agent profile configuration files?</li>
+        <li>What are all the frontmatter keys, and which one is <strong>required</strong>?</li>
+        <li>Can you list all exam-critical artifact paths and their purposes from memory?</li>
+        <li>How does MCP architecture work? What does each layer (Agent → Client → Server → External Service) do?</li>
+        <li>How do you run agents in CI? What flags are needed? What token is required?</li>
+        <li>What are the three execution contexts and when is each appropriate?</li>
+        <li>What are the four safe execution patterns (error handling, retries, rollbacks, escalation)?</li>
+        <li>What tool permissions are needed for creating branches and PRs autonomously?</li>
+      </ol>
+      <p>If you can confidently answer all ten, you're ready for Domain 2 questions. This is the heaviest domain — master it, and you're a quarter of the way to passing the exam.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- BOTTOM NAV                                                   -->
+  <!-- ============================================================ -->
+  <div class="nav-links">
+    <a href="domain-1.html">&larr; Domain 1: Architecture</a>
+    <a href="domain-3.html">Domain 3: Memory &amp; State &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 2 · Based on official Microsoft Learn modules and GitHub Docs</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 5: Multi-Agent Systems and Orchestration — GH-600 Study</title>
+<meta name="description" content="Domain 5 lesson page for GH-600: Multi-Agent Systems and Orchestration — instructor-style guide with multi-agent pipeline SVG, orchestration patterns, conflict detection, and failure diagnosis">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html" class="active">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 5 · Weight: 15-20%</div>
+  <h1>Multi-Agent Systems<br>&amp; Orchestration</h1>
+  <p>One agent is a tool. Multiple agents are a <strong>system</strong>. Domain 5 teaches you how to design, coordinate, and troubleshoot multi-agent workflows — deciding <em>which</em> agent does <em>what</em> and <em>when</em>, while managing isolation, conflicts, and observability across the entire pipeline.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Multi-Agent Responsibilities in the SDLC           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. Multi-Agent Responsibilities in the SDLC</h2>
+    <p>In a modern agentic SDLC, different agents specialize in different stages of the software lifecycle. Rather than one monolithic agent doing everything, you build a <strong>team of agents</strong> — each with its own profile, tools, permissions, and responsibilities. The exam expects you to understand how these roles map to SDLC phases.</p>
+
+    <h3>Common Agent Roles Across the SDLC</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>SDLC Phase</th>
+          <th>Agent Role</th>
+          <th>Typical Tools</th>
+        </tr>
+        <tr>
+          <td><strong>Planning</strong></td>
+          <td>Plan Agent — analyzes requirements, breaks down work, creates issues and milestones</td>
+          <td><code>file-read</code>, <code>issue-create</code>, <code>web</code></td>
+        </tr>
+        <tr>
+          <td><strong>Development</strong></td>
+          <td>Dev Agent — writes code, runs tests, commits changes</td>
+          <td><code>file-read</code>, <code>file-write</code>, <code>shell</code>, <code>search</code></td>
+        </tr>
+        <tr>
+          <td><strong>Review</strong></td>
+          <td>Review Agent — inspects PR diffs, runs linters, flags issues</td>
+          <td><code>pr-comment</code>, <code>search</code>, <code>web</code></td>
+        </tr>
+        <tr>
+          <td><strong>Testing</strong></td>
+          <td>Test Agent — writes and runs unit, integration, and E2E tests</td>
+          <td><code>shell</code>, <code>file-write</code>, <code>search</code></td>
+        </tr>
+        <tr>
+          <td><strong>Deployment</strong></td>
+          <td>Deploy Agent — builds artifacts, deploys to environments</td>
+          <td><code>shell</code>, <code>web</code>, <code>environment-select</code></td>
+        </tr>
+        <tr>
+          <td><strong>Monitoring</strong></td>
+          <td>Monitor Agent — watches for alerts, investigates incidents</td>
+          <td><code>web</code>, <code>search</code>, <code>file-read</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>The key insight: <strong>each agent has a bounded scope</strong>. A dev agent shouldn't deploy. A review agent shouldn't write code. This separation of concerns is what makes multi-agent systems safe and auditable at scale.</p>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — Role Separation Is Governance:</strong> The exam treats agent role separation as a <strong>governance mechanism</strong>, not just a design pattern. When a scenario describes an agent that both writes <em>and</em> deploys code, the correct answer is usually to split it into two agents with different permission boundaries. Think of it like separation of duties in financial systems — no single agent should have end-to-end power.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Orchestration Patterns                             -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. Orchestration Patterns: Hierarchical, Sequential, Parallel, Competitive</h2>
+    <p>Once you have multiple agents, you need a way to <strong>coordinate them</strong>. The exam defines four core orchestration patterns. Each maps to a specific GitHub-native mechanism.</p>
+
+    <h3>Hierarchical (Parent/Child via <code>agent</code> tool)</h3>
+    <p>A parent agent delegates sub-tasks to child agents using the <code>agent</code> tool. The parent defines the task, the child executes it, and the parent collects the result. This is the most flexible pattern — the parent can dynamically decide which child to invoke based on the task at hand.</p>
+    <ul>
+      <li><strong>When to use:</strong> Complex tasks that require specialized sub-tasks; dynamic delegation based on runtime context</li>
+      <li><strong>GitHub mechanism:</strong> Agent profile includes <code>tools: [agent]</code>; parent references child agent IDs</li>
+      <li><strong>Pros:</strong> Dynamic, flexible, perfect for divide-and-conquer</li>
+      <li><strong>Cons:</strong> Parent becomes a potential single point of failure; parent must have tool access</li>
+    </ul>
+
+    <h3>Sequential (Pipeline via <code>needs</code>)</h3>
+    <p>Agents execute in a fixed sequence, where each agent's output feeds the next. This is implemented via GitHub Actions <code>needs</code> — Job B waits for Job A to complete before starting.</p>
+    <ul>
+      <li><strong>When to use:</strong> Linear workflows where each step depends on the previous (plan → code → test → deploy)</li>
+      <li><strong>GitHub mechanism:</strong> <code>jobs: { job_a: {…}, job_b: { needs: [job_a], … } }</code></li>
+      <li><strong>Pros:</strong> Predictable, easy to reason about, natural dependency model</li>
+      <li><strong>Cons:</strong> Slow — total time is sum of all steps; failures block the entire pipeline</li>
+    </ul>
+
+    <h3>Parallel (via <code>strategy.matrix</code>)</h3>
+    <p>Multiple agents execute the same task with different inputs or configurations simultaneously. This is the <strong>fan-out</strong> pattern, implemented via GitHub Actions <code>strategy.matrix</code>.</p>
+    <ul>
+      <li><strong>When to use:</strong> Running tests across multiple OS/version combinations; scanning many files concurrently</li>
+      <li><strong>GitHub mechanism:</strong> <code>strategy: { matrix: { os: [ubuntu, macos, windows] } }</code></li>
+      <li><strong>Pros:</strong> Fast — total time equals the slowest parallel job; natural for CI/CD</li>
+      <li><strong>Cons:</strong> Matrix sprawl (too many combinations); harder to collect and aggregate results</li>
+    </ul>
+
+    <h3>Competitive (Contest Pattern)</h3>
+    <p>Multiple agents independently attempt the same task. The first to produce a valid result wins; other agents are cancelled. This is less common but powerful for latency-sensitive tasks.</p>
+    <ul>
+      <li><strong>When to use:</strong> When you need the fastest possible answer; when different approaches might yield different quality results</li>
+      <li><strong>GitHub mechanism:</strong> Custom workflow with cancellation of redundant jobs; result comparison gate</li>
+      <li><strong>Pros:</strong> Lowest latency; redundancy against individual agent failure</li>
+      <li><strong>Cons:</strong> Resource waste (N-1 agents' work is discarded); result reconciliation complexity</li>
+    </ul>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> The exam will give you a scenario and ask which orchestration pattern to use. If the scenario mentions <strong>dynamic delegation</strong> where a lead agent decides sub-tasks at runtime → <strong>hierarchical</strong>. If it's a <strong>fixed sequence of steps</strong> → <strong>sequential</strong>. If it's <strong>same task with different inputs</strong> → <strong>parallel/matrix</strong>. If it's <strong>multiple agents racing for the fastest result</strong> → <strong>competitive</strong>. Don't mix them up — each pattern has a distinct trigger condition.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Multi-Agent Pipeline Diagram                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Multi-Agent Pipeline: Parallel + Sequential Orchestration</h2>
+    <p>The diagram below shows a real-world multi-agent pipeline that combines <strong>parallel</strong> (matrix-based) and <strong>sequential</strong> (needs-based) orchestration. The Plan Agent kicks things off, then Dev Agents work in parallel, followed by sequential review and deployment phases:</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 800 680" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-agent pipeline diagram showing parallel and sequential orchestration">
+        <defs>
+          <linearGradient id="bgD5" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f0fdf4" />
+            <stop offset="100%" stop-color="#dcfce7" />
+          </linearGradient>
+          <linearGradient id="planGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#3b82f6" />
+          </linearGradient>
+          <linearGradient id="devGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#fbbf24" />
+          </linearGradient>
+          <linearGradient id="reviewGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed" />
+            <stop offset="100%" stop-color="#8b5cf6" />
+          </linearGradient>
+          <linearGradient id="testGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+          <linearGradient id="deployGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#dc2626" />
+            <stop offset="100%" stop-color="#ef4444" />
+          </linearGradient>
+          <filter id="shadowD5">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".15" />
+          </filter>
+          <marker id="arrowD5" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+            <polygon points="0 0, 12 4, 0 8" fill="#475569"/>
+          </marker>
+          <marker id="arrowD5green" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+            <polygon points="0 0, 12 4, 0 8" fill="#059669"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="800" height="680" rx="10" fill="url(#bgD5)" />
+
+        <!-- Title -->
+        <text x="400" y="30" text-anchor="middle" fill="#065f46" font-size="16" font-weight="800" font-family="Inter,sans-serif">Multi-Agent Pipeline: Parallel + Sequential Orchestration</text>
+
+        <!-- Phase labels on left -->
+        <text x="20" y="80" text-anchor="start" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">PHASE 1</text>
+        <text x="20" y="195" text-anchor="start" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">PHASE 2<br/>(Parallel)</text>
+        <text x="20" y="400" text-anchor="start" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">PHASE 3</text>
+        <text x="20" y="530" text-anchor="start" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">PHASE 4</text>
+        <text x="20" y="640" text-anchor="start" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">PHASE 5</text>
+
+        <!-- Phase 1: Plan Agent (Single, Sequential start) -->
+        <rect x="260" y="60" width="280" height="50" rx="10" fill="url(#planGrad)" filter="url(#shadowD5)" />
+        <text x="400" y="83" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">📋 Plan Agent</text>
+        <text x="400" y="100" text-anchor="middle" fill="#dbeafe" font-size="10" font-family="Inter,sans-serif">Analyze requirements · Create issues · Define scope</text>
+
+        <!-- Arrow down from Plan -->
+        <line x1="400" y1="110" x2="400" y2="145" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowD5)" />
+        <text x="420" y="135" text-anchor="start" fill="#059669" font-size="9" font-weight="600" font-family="Inter,sans-serif">needs: [plan]</text>
+
+        <!-- Phase 2: Parallel Dev Agents (Matrix) -->
+        <!-- Branch vertical line -->
+        <line x1="400" y1="145" x2="400" y2="155" stroke="#475569" stroke-width="2" />
+        <line x1="140" y1="155" x2="660" y2="155" stroke="#475569" stroke-width="2" />
+        <line x1="140" y1="155" x2="140" y2="165" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+        <line x1="400" y1="155" x2="400" y2="165" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+        <line x1="660" y1="155" x2="660" y2="165" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+
+        <!-- Dev Agent A -->
+        <rect x="60" y="170" width="160" height="50" rx="10" fill="url(#devGrad)" filter="url(#shadowD5)" />
+        <text x="140" y="193" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🖥️ Dev Agent A</text>
+        <text x="140" y="210" text-anchor="middle" fill="#fef3c7" font-size="9" font-family="Inter,sans-serif">Frontend module</text>
+
+        <!-- Dev Agent B -->
+        <rect x="320" y="170" width="160" height="50" rx="10" fill="url(#devGrad)" filter="url(#shadowD5)" />
+        <text x="400" y="193" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🖥️ Dev Agent B</text>
+        <text x="400" y="210" text-anchor="middle" fill="#fef3c7" font-size="9" font-family="Inter,sans-serif">Backend / API</text>
+
+        <!-- Dev Agent C -->
+        <rect x="580" y="170" width="160" height="50" rx="10" fill="url(#devGrad)" filter="url(#shadowD5)" />
+        <text x="660" y="193" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,sans-serif">🖥️ Dev Agent C</text>
+        <text x="660" y="210" text-anchor="middle" fill="#fef3c7" font-size="9" font-family="Inter,sans-serif">Tests</text>
+
+        <!-- "strategy.matrix" label -->
+        <text x="400" y="240" text-anchor="middle" fill="#059669" font-size="10" font-weight="700" font-family="Inter,sans-serif">← strategy.matrix: 3 parallel dev agents →</text>
+
+        <!-- Join lines from parallel agents -->
+        <line x1="140" y1="220" x2="140" y2="260" stroke="#475569" stroke-width="1.5" />
+        <line x1="400" y1="220" x2="400" y2="260" stroke="#475569" stroke-width="1.5" />
+        <line x1="660" y1="220" x2="660" y2="260" stroke="#475569" stroke-width="1.5" />
+        <line x1="140" y1="260" x2="660" y2="260" stroke="#475569" stroke-width="2" />
+        <line x1="400" y1="260" x2="400" y2="290" stroke="#475569" stroke-width="2" marker-end="url(#arrowD5)" />
+        <text x="420" y="283" text-anchor="start" fill="#059669" font-size="9" font-weight="600" font-family="Inter,sans-serif">needs: [dev-a, dev-b, dev-c]</text>
+
+        <!-- Phase 3: Sequential Review -> Test -->
+        <!-- Review Agent -->
+        <rect x="260" y="295" width="280" height="50" rx="10" fill="url(#reviewGrad)" filter="url(#shadowD5)" />
+        <text x="400" y="318" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">🔍 Review Agent</text>
+        <text x="400" y="335" text-anchor="middle" fill="#e9d5ff" font-size="10" font-family="Inter,sans-serif">Inspect diffs · Lint · Flag issues</text>
+
+        <!-- Arrow: Review -> Test -->
+        <line x1="400" y1="345" x2="400" y2="380" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowD5)" />
+        <text x="420" y="372" text-anchor="start" fill="#059669" font-size="9" font-weight="600" font-family="Inter,sans-serif">needs: [review]</text>
+
+        <!-- Phase 4: Test Agent -->
+        <rect x="260" y="385" width="280" height="50" rx="10" fill="url(#testGrad)" filter="url(#shadowD5)" />
+        <text x="400" y="408" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">🧪 Test Agent</text>
+        <text x="400" y="425" text-anchor="middle" fill="#d1fae5" font-size="10" font-family="Inter,sans-serif">Run unit + integration + E2E tests</text>
+
+        <!-- Arrow: Test -> Deploy -->
+        <line x1="400" y1="435" x2="400" y2="490" stroke="#475569" stroke-width="2.5" marker-end="url(#arrowD5)" />
+        <text x="420" y="478" text-anchor="start" fill="#059669" font-size="9" font-weight="600" font-family="Inter,sans-serif">needs: [test]</text>
+
+        <!-- Phase 5: Deploy Agent -->
+        <rect x="260" y="495" width="280" height="50" rx="10" fill="url(#deployGrad)" filter="url(#shadowD5)" />
+        <text x="400" y="518" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">🚀 Deploy Agent</text>
+        <text x="400" y="535" text-anchor="middle" fill="#fecaca" font-size="10" font-family="Inter,sans-serif">Build artifact · Deploy to environment</text>
+
+        <!-- Legend -->
+        <rect x="50" y="570" width="700" height="85" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1" />
+        <text x="400" y="590" text-anchor="middle" fill="#475569" font-size="11" font-weight="700" font-family="Inter,sans-serif">Legend</text>
+
+        <rect x="70" y="600" width="12" height="12" rx="3" fill="url(#planGrad)" />
+        <text x="88" y="610" fill="#475569" font-size="10" font-family="Inter,sans-serif">Sequential (needs)</text>
+
+        <rect x="220" y="600" width="12" height="12" rx="3" fill="url(#devGrad)" />
+        <text x="238" y="610" fill="#475569" font-size="10" font-family="Inter,sans-serif">Parallel (strategy.matrix)</text>
+
+        <rect x="410" y="600" width="12" height="12" rx="3" fill="url(#reviewGrad)" />
+        <text x="428" y="610" fill="#475569" font-size="10" font-family="Inter,sans-serif">Sequential Review Gate</text>
+
+        <rect x="590" y="600" width="12" height="12" rx="3" fill="url(#deployGrad)" />
+        <text x="608" y="610" fill="#475569" font-size="10" font-family="Inter,sans-serif">Deploy (needs)</text>
+
+        <text x="400" y="640" text-anchor="middle" fill="#059669" font-size="9" font-weight="600" font-family="Inter,sans-serif">Phase 1 → Phase 2 (parallel) → Phase 3 → Phase 4 → Phase 5 (sequential)</text>
+      </svg>
+      <div class="diagram-caption">Figure 5.1 — Multi-Agent Pipeline: Plan Agent initiates parallel Dev Agents (via strategy.matrix), then sequential Review → Test → Deploy Agents (via needs). This combines the two most common orchestration patterns.</div>
+    </div>
+
+    <p>This combined approach gives you the <strong>speed of parallelism</strong> where it matters (development) and the <strong>safety of sequential gates</strong> where it matters (review, testing, deployment). The exam expects you to recognize when each pattern is appropriate and how to combine them.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Agent Isolation                                    -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. Agent Isolation: Branches, Workflows, Permissions, Concurrency</h2>
+    <p>When multiple agents operate in the same repository, you need <strong>isolation</strong> — agents must not interfere with each other's work. The exam identifies four isolation mechanisms:</p>
+
+    <h3>Branch Isolation</h3>
+    <p>Each agent works in its own branch. This is the simplest and most important isolation mechanism — changes are staged in separate branches until they're ready to merge.</p>
+    <ul>
+      <li><strong>Implement via:</strong> GitHub branch protection rules + agent workflow creates unique branch per task</li>
+      <li><strong>Best practice:</strong> Use descriptive branch naming like <code>agent/{agent-name}/{task-id}</code></li>
+      <li><strong>Exam tip:</strong> Branch isolation prevents agents from overwriting each other's work in progress</li>
+    </ul>
+
+    <h3>Workflow Isolation</h3>
+    <p>Each agent runs in its own GitHub Actions workflow (or job within a workflow). Workflow isolation prevents one agent's execution from affecting another's runtime environment.</p>
+    <ul>
+      <li><strong>Implement via:</strong> Separate workflow YAML files per agent or per task type</li>
+      <li><strong>Best practice:</strong> Use separate runners or container environments per agent type</li>
+      <li><strong>Exam tip:</strong> Workflow isolation is about runtime separation, not just code separation</li>
+    </ul>
+
+    <h3>Permission Isolation</h3>
+    <p>Each agent has a unique set of permissions via its agent profile. Permissions define which tools, files, and actions the agent can access.</p>
+    <ul>
+      <li><strong>Implement via:</strong> <code>.github/agents/*.agent.md</code> — each agent has its own <code>tools</code> and <code>permissions</code> block</li>
+      <li><strong>Best practice:</strong> Apply least-privilege: give each agent only the tools it needs for its role</li>
+      <li><strong>Exam tip:</strong> A dev agent shouldn't have deploy permissions; a monitor agent shouldn't have write permissions</li>
+    </ul>
+
+    <h3>Concurrency Controls</h3>
+    <p>GitHub Actions <strong>concurrency groups</strong> prevent multiple jobs or workflows from running simultaneously on the same resource.</p>
+    <ul>
+      <li><strong>Implement via:</strong> <code>concurrency:</code> key in workflow YAML with a group name</li>
+      <li><strong>Best practice:</strong> Use <code>cancel-in-progress: true</code> to cancel older runs when a new one starts</li>
+      <li><strong>Exam tip:</strong> Concurrency groups are essential for preventing race conditions in multi-agent deployments</li>
+    </ul>
+
+    <div class="code-block"># Example: Concurrency control for deployment agent
+name: Deploy Agent
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [staging, production]
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: ./deploy.sh</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Conflict Detection and Resolution                 -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. Conflict Detection and Resolution</h2>
+    <p>When multiple agents work concurrently, conflicts are inevitable. The exam tests your understanding of how GitHub-native features help detect and resolve these conflicts.</p>
+
+    <h3>PR Reviews as Conflict Resolution</h3>
+    <p>Pull requests are the <strong>primary conflict resolution mechanism</strong>. When two agents make changes to the same repository, their work is merged via PRs, which:</p>
+    <ul>
+      <li>Surface merge conflicts that must be resolved before merging</li>
+      <li>Provide a review process for human or agent reviewers to validate changes</li>
+      <li>Require status checks (CI) to pass, ensuring conflicting changes don't break the build</li>
+      <li>Enable CODEOWNERS approval for files that need specialized review</li>
+    </ul>
+
+    <h3>Concurrency Groups for Conflict Prevention</h3>
+    <p>As discussed above, concurrency groups prevent conflicting workflows from running at the same time. This is a <strong>preventive</strong> measure — it stops conflicts before they happen.</p>
+
+    <h3>Branch Protection Rules</h3>
+    <p>Branch protection rules enforce conflict-avoidance policies:</p>
+    <ul>
+      <li><strong>Require linear history</strong> — prevents merge commits and forces rebase, keeping history clean</li>
+      <li><strong>Require up-to-date branches</strong> — forces agents to rebase on latest main before merging</li>
+      <li><strong>Require status checks</strong> — ensures all evaluation gates pass before merge</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — Conflict Resolution Flow:</strong> Think of conflict resolution as a three-stage pipeline: <strong>Prevent</strong> (concurrency groups, branch isolation) → <strong>Detect</strong> (PR merge conflict detection, CI failures) → <strong>Resolve</strong> (PR review, human mediation, rebase). The exam will ask you to identify which stage a given mechanism belongs to — make sure you can map each mechanism to its stage.</p>
+    </div>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> A question might present a scenario where two agents create conflicting changes and ask: <em>"Which GitHub-native mechanism detects this conflict?"</em> The answer is <strong>PR merge conflict detection</strong>, not concurrency groups. Concurrency groups prevent <em>simultaneous execution</em> conflicts; PR detection catches <em>code-level</em> conflicts. Know the difference.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: System Observability                              -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. System Observability: Attribution, Evidence, Cross-Job Handoffs</h2>
+    <p>In a multi-agent system, you need to know <strong>who did what, when, and why</strong>. The exam defines three pillars of observability:</p>
+
+    <h3>Attribution</h3>
+    <p>Every action must be traceable to a specific agent. Attribution is achieved through:</p>
+    <ul>
+      <li><strong>Agent identity in workflow logs:</strong> Each agent's name and profile ID are logged with every action</li>
+      <li><strong>Commit authorship:</strong> Git commits made by agents are attributed to the agent identity</li>
+      <li><strong>PR authorship:</strong> PRs created by agents show the agent as the author</li>
+    </ul>
+
+    <h3>Evidence</h3>
+    <p>Agents must produce evidence that they performed their tasks correctly. Evidence includes:</p>
+    <ul>
+      <li><strong>Workflow artifacts:</strong> Test reports, coverage summaries, build outputs</li>
+      <li><strong>Session logs:</strong> Complete trace of agent actions, tool calls, and model responses</li>
+      <li><strong>Check run results:</strong> Status checks that validate agent output</li>
+    </ul>
+
+    <h3>Cross-Job Handoffs</h3>
+    <p>When one agent's output becomes another agent's input, the handoff must be observable:</p>
+    <ul>
+      <li><strong>Workflow outputs:</strong> Jobs produce outputs consumed by downstream jobs via <code>needs</code></li>
+      <li><strong>Artifact passing:</strong> Build artifacts are uploaded and downloaded between jobs</li>
+      <li><strong>Workflow run URL:</strong> Each run has a unique URL that links all jobs together</li>
+      <li><strong>Log correlation:</strong> Cross-referencing log entries across jobs via run ID and timestamps</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — Traceability Is Exam Gold:</strong> If an exam scenario describes a problem in a multi-agent system, the first step is always <strong>check attribution and logs</strong>. Who was the last agent to touch this file? What did the session log show? Traceability is the starting point for all debugging in multi-agent systems. The exam rewards this pattern relentlessly.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: Failure Diagnosis and Recovery at Scale           -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. Failure Diagnosis and Recovery at Scale</h2>
+    <p>When a multi-agent pipeline fails — and it will — you need a systematic approach to diagnosis and recovery. The exam expects you to know the diagnosis workflow and recovery strategies.</p>
+
+    <h3>Diagnosis Workflow</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Step</th>
+          <th>Action</th>
+          <th>Tool / Resource</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Identify the failing job or agent</td>
+          <td>Workflow run page, job status indicators</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Examine session logs for error messages</td>
+          <td>GitHub Actions log viewer, agent session logs</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Check workflow artifacts for failure evidence</td>
+          <td>Artifact download, test report viewer</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Attribute the failure to an agent or action</td>
+          <td>Log correlation, commit attribution</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Determine the root cause category</td>
+          <td>Diagnosis tree: config → instructions → tools → env → MCP</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Apply the fix and re-run</td>
+          <td>Tuning levers: instructions, tools, environment, MCP</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Recovery Strategies</h3>
+    <ul>
+      <li><strong>Retry with backoff:</strong> For transient failures (network timeouts, rate limits), configure automatic retries with exponential backoff in the workflow</li>
+      <li><strong>Rollback and retry:</strong> For code-level failures, revert the agent's last changes and retry with corrected instructions</li>
+      <li><strong>Fallback to human:</strong> For unresolvable failures, escalate to a human operator via workflow dispatch or issue creation</li>
+      <li><strong>Partial replay:</strong> Re-run only the failed job (via workflow re-run), not the entire multi-agent pipeline</li>
+      <li><strong>Checkpoint restart:</strong> Restore from a known-good checkpoint and resume execution from that point</li>
+    </ul>
+
+    <h3>Recovery at Scale</h3>
+    <p>At scale, you need automated recovery. The exam highlights these patterns:</p>
+    <ul>
+      <li><strong>Self-healing agents:</strong> Configure agents to detect their own failures and attempt recovery before reporting failure</li>
+      <li><strong>Circuit breaker pattern:</strong> After N consecutive failures, stop retrying and alert a human</li>
+      <li><strong>Dead letter queue:</strong> Route unrecoverable failures to a queue for human review</li>
+      <li><strong>Health monitoring:</strong> Regular heartbeat checks on agent availability and pipeline health</li>
+    </ul>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> The exam may present a failure scenario and ask: <em>"What's the best recovery strategy?"</em> If the failure is <strong>transient</strong> (network blip, API rate limit), the answer is <strong>retry with backoff</strong>. If the failure is <strong>logic-based</strong> (wrong code, bad instructions), the answer is <strong>fix instructions and re-run</strong>. If the failure is <strong>unrecoverable</strong> (security violation, policy breach), the answer is <strong>escalate to human</strong>. Match the recovery strategy to the failure type.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Key Takeaways                                     -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Domain 5 Key Takeaways</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Concept</th>
+          <th>Key Insight</th>
+          <th>Exam Tip</th>
+        </tr>
+        <tr>
+          <td>Multi-Agent SDLC Roles</td>
+          <td>Each SDLC phase needs a specialized agent with bounded scope</td>
+          <td>Separation of duties is a governance mechanism</td>
+        </tr>
+        <tr>
+          <td>Orchestration Patterns</td>
+          <td>Hierarchical (agent tool), Sequential (needs), Parallel (matrix), Competitive (contest)</td>
+          <td>Match pattern to scenario: dynamic delegation = hierarchical, fixed sequence = sequential</td>
+        </tr>
+        <tr>
+          <td>Agent Isolation</td>
+          <td>Branches, workflows, permissions, concurrency controls — all four are needed</td>
+          <td>Each mechanism isolates a different dimension (code, runtime, access, execution)</td>
+        </tr>
+        <tr>
+          <td>Conflict Resolution</td>
+          <td>Prevent → Detect → Resolve: concurrency groups, PR merge detection, human review</td>
+          <td>Concurrency groups prevent execution conflicts; PR detects code conflicts</td>
+        </tr>
+        <tr>
+          <td>System Observability</td>
+          <td>Attribution + Evidence + Cross-Job Handoffs = full traceability</td>
+          <td>Always start debugging with logs and attribution</td>
+        </tr>
+        <tr>
+          <td>Failure Recovery</td>
+          <td>Retry → Rollback → Escalate: match strategy to failure type</td>
+          <td>Transient = retry; Logic = fix &amp; re-run; Unrecoverable = human</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="domain-4.html">&larr; D4: Evaluation</a>
+    <a href="domain-6.html">D6: Guardrails &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 5 · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+</body>
+</html>

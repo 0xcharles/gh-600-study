@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain 3: Memory, State, and Execution — GH-600 Study</title>
+<meta name="description" content="Domain 3 lesson page for GH-600: Memory, State, and Execution — instructor-style guide with three-tier memory hierarchy SVG, exam-focused content on memory types, context drift, and continuity">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html" class="active">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Domain 3 · Weight: 10-15%</div>
+  <h1>Memory, State, &amp;<br>Execution</h1>
+  <p>Agents can't do useful work if they forget everything between turns. This domain covers how agents remember, how state persists across sessions, and how execution continuity is maintained across tools and environments — including the critical concept of context drift detection and correction.</p>
+</section>
+
+<main class="main">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Why Memory Matters                                -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>1. Why Memory Matters in Agentic AI</h2>
+    <p>Welcome, student. Domain 3 is all about one question: <strong>how does an agent know what it's doing from one moment to the next?</strong> Without memory, every agent interaction starts from zero — no awareness of previous turns, no knowledge of repository facts, no recollection of user preferences. That's why memory is arguably the most important infrastructure component in any agent system.</p>
+    <p>The Microsoft Learn module <strong>"Memory, State, and Evaluation"</strong> and the <strong>GitHub Copilot Memory documentation</strong> define three distinct memory tiers. Understanding the difference between them — and when each is appropriate — is the core skill tested in this domain.</p>
+    <p>By the end of this lesson, you'll be able to:</p>
+    <ul>
+      <li>Identify which memory type fits a given scenario</li>
+      <li>Explain how memory scoping, expiration, and pruning work</li>
+      <li>Describe Copilot Memory's repository-level and user-level mechanisms</li>
+      <li>Recognize context drift and choose the right correction strategy</li>
+      <li>Design for continuity across tool and environment boundaries</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The Memory Mindset:</strong> Think of memory like a construction site. <strong>Short-term memory</strong> is the foreman's clipboard for today's tasks. <strong>Long-term memory</strong> is the blueprint repository and site rules. <strong>External durable artifacts</strong> are the actual building — the concrete and steel that remain after everyone goes home. Each serves a different purpose, and confusing them leads to architectural mistakes the exam loves to test.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Three-Tier Memory Hierarchy                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>2. The Three-Tier Memory Hierarchy</h2>
+    <p>The exam defines <strong>three memory types</strong> in a strict hierarchy. Each has different persistence, scope, and access characteristics. Here's the visual model — study this diagram carefully:</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three-tier memory hierarchy diagram">
+        <defs>
+          <linearGradient id="bgGradD3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f0f9ff" />
+            <stop offset="100%" stop-color="#e0f2fe" />
+          </linearGradient>
+          <linearGradient id="shortGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#fbbf24" />
+          </linearGradient>
+          <linearGradient id="longGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#3b82f6" />
+          </linearGradient>
+          <linearGradient id="extGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+          <filter id="shadowD3">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".15" />
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="760" height="460" rx="10" fill="url(#bgGradD3)" />
+
+        <!-- Title -->
+        <text x="380" y="32" text-anchor="middle" fill="#1e3a5f" font-size="16" font-weight="800" font-family="Inter,sans-serif">Three-Tier Memory Hierarchy</text>
+
+        <!-- Tier 1: Short-Term Memory (bottom, widest) -->
+        <rect x="30" y="340" width="700" height="80" rx="10" fill="url(#shortGrad)" filter="url(#shadowD3)" />
+        <text x="380" y="370" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="Inter,sans-serif">Tier 1: Short-Term Memory (Session)</text>
+        <text x="380" y="392" text-anchor="middle" fill="#fef3c7" font-size="11" font-family="Inter,sans-serif">Duration: Single session · Scope: Current conversation · Volatile: Lost when session ends</text>
+
+        <!-- Arrow up -->
+        <line x1="380" y1="340" x2="380" y2="300" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3" />
+        <polygon points="375,304 380,294 385,304" fill="#94a3b8" />
+
+        <!-- Tier 2: Long-Term Memory (middle) -->
+        <rect x="80" y="210" width="600" height="80" rx="10" fill="url(#longGrad)" filter="url(#shadowD3)" />
+        <text x="380" y="240" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="Inter,sans-serif">Tier 2: Long-Term Memory (Copilot Memory)</text>
+        <text x="380" y="262" text-anchor="middle" fill="#dbeafe" font-size="11" font-family="Inter,sans-serif">Duration: 28 days (auto-deleted) · Scope: Repository facts + User preferences</text>
+
+        <!-- Arrow up -->
+        <line x1="380" y1="210" x2="380" y2="170" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3" />
+        <polygon points="375,174 380,164 385,174" fill="#94a3b8" />
+
+        <!-- Tier 3: External (top, narrowest) -->
+        <rect x="130" y="80" width="500" height="80" rx="10" fill="url(#extGrad)" filter="url(#shadowD3)" />
+        <text x="380" y="110" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="Inter,sans-serif">Tier 3: External / Durable Artifacts</text>
+        <text x="380" y="132" text-anchor="middle" fill="#d1fae5" font-size="11" font-family="Inter,sans-serif">Duration: Permanent (until deleted) · Commits, PRs, Workflow Logs, Issues</text>
+
+        <!-- Side annotations: Volatility -->
+        <text x="22" y="440" font-size="10" fill="#64748b" font-family="Inter,sans-serif">← Volatile</text>
+        <rect x="22" y="420" width="12" height="12" rx="2" fill="#f59e0b" />
+        <text x="22" y="460" font-size="10" fill="#64748b" font-family="Inter,sans-serif">Durable →</text>
+        <rect x="726" y="420" width="12" height="12" rx="2" fill="#059669" />
+
+        <!-- Access speed annotation -->
+        <text x="380" y="454" text-anchor="middle" font-size="10" fill="#64748b" font-family="Inter,sans-serif">Fast access · Short lifespan  ——————————————————————  Slower access · Permanent record</text>
+
+        <!-- Lateral arrows -->
+        <text x="380" y="198" text-anchor="middle" fill="#64748b" font-size="9" font-family="Inter,sans-serif">Promotion (session → preferences)</text>
+        <text x="380" y="170" text-anchor="middle" fill="#64748b" font-size="9" font-family="Inter,sans-serif">Archival (memory → artifacts)</text>
+      </svg>
+      <div class="diagram-caption">Figure 3.1 — Three-Tier Memory Hierarchy: short-term (session), long-term (Copilot Memory), and external (durable artifacts). Information flows upward as it becomes more permanent.</div>
+    </div>
+
+    <h3>Tier 1: Short-Term Memory (Session)</h3>
+    <p><strong>Short-term memory</strong> is the agent's working memory for the current conversation or session. It includes:</p>
+    <ul>
+      <li>The current conversation history (user messages, agent responses, tool calls)</li>
+      <li>In-session decisions, intermediate results, and tentative plans</li>
+      <li>File contents the agent has read or edited during the session</li>
+      <li>Temporary state that exists only for the duration of the interaction</li>
+    </ul>
+    <p>Short-term memory is <strong>volatile</strong> — it disappears when the session ends. Think of it as the agent's scratch pad. It's fast, local, and requires no special configuration.</p>
+
+    <h3>Tier 2: Long-Term Memory (Copilot Memory)</h3>
+    <p><strong>Long-term memory</strong> — officially called <strong>Copilot Memory</strong> — persists across sessions. It stores two categories of information:</p>
+    <ul>
+      <li><strong>Repository-level facts:</strong> Key files, function signatures, documentation references, architectural patterns that the agent learns about your codebase</li>
+      <li><strong>User-level preferences:</strong> Coding style preferences, testing conventions, frequently used libraries, personal workflow habits</li>
+    </ul>
+    <p>Copilot Memory has a <strong>28-day auto-deletion</strong> policy. Information that isn't reinforced within 28 days is automatically pruned. This prevents stale or outdated knowledge from accumulating.</p>
+
+    <h3>Tier 3: External / Durable Artifacts</h3>
+    <p><strong>External durable artifacts</strong> are the permanent records of agent actions — the outputs that exist independently of any agent session:</p>
+    <ul>
+      <li><strong>Commits:</strong> Source code changes that are permanently recorded in Git history</li>
+      <li><strong>Pull Requests:</strong> Structured change proposals with discussion history and reviews</li>
+      <li><strong>Workflow logs:</strong> CI/CD execution records that capture every command and output</li>
+      <li><strong>Issues and comments:</strong> Persistent communication threads about bugs, features, and tasks</li>
+    </ul>
+    <p>These artifacts are the <strong>system of record</strong> — they don't expire, and they can be referenced by any agent or human at any time in the future.</p>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Alert:</strong> The exam will test whether you know which memory tier applies in a given scenario. If the scenario says "the agent needs to remember a preference across sessions" → that's <strong>Copilot Memory (Tier 2)</strong>. If it says "the agent needs a permanent record of a configuration change" → that's a <strong>durable artifact (Tier 3)</strong>. Don't confuse session memory with long-term memory — session data is never persisted.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: Memory Scoping, Expiration & Pruning              -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>3. Memory Scoping, Expiration, and Pruning</h2>
+    <p>Memory isn't just about storage — it's about relevance. An agent needs to know <strong>what information is relevant to the current task</strong> and <strong>what information should be discarded</strong>. The exam tests three memory management mechanisms:</p>
+
+    <h3>Scoping</h3>
+    <p>Memory scoping determines <strong>which information is visible</strong> to the agent during a given task. Effective scoping ensures the agent's context window isn't cluttered with irrelevant data. Scoping rules include:</p>
+    <ul>
+      <li><strong>Repository scope:</strong> Facts are scoped to the repository where they were learned</li>
+      <li><strong>Task scope:</strong> Only memory entries tagged with relevant task labels are surfaced</li>
+      <li><strong>Tool scope:</strong> Memory from specific tool interactions (e.g., search results) is scoped to that tool's domain</li>
+    </ul>
+
+    <h3>Expiration</h3>
+    <p>Memory entries have <strong>time-based expiration</strong>. Copilot Memory automatically expires after 28 days if not reinforced. Short-term memory expires at the end of the session. Durable artifacts have no expiration — they persist indefinitely.</p>
+
+    <h3>Pruning</h3>
+    <p>When memory exceeds capacity (especially the context window), the agent must <strong>prune</strong> less relevant information. Pruning strategies include:</p>
+    <ul>
+      <li><strong>Recency-based:</strong> Keep the most recent N entries, discard older ones</li>
+      <li><strong>Relevance-based:</strong> Keep entries that match the current task's semantic context</li>
+      <li><strong>Priority-based:</strong> Keep high-priority entries (e.g., user preferences) over low-priority ones (e.g., intermediate calculations)</li>
+    </ul>
+
+    <h3>Reset Rules</h3>
+    <p>Sometimes memory needs to be explicitly <strong>reset</strong>. Reset triggers include:</p>
+    <ul>
+      <li><strong>New task:</strong> Starting a fundamentally different task clears session context</li>
+      <li><strong>Error recovery:</strong> After a critical failure, resetting memory prevents cascading errors</li>
+      <li><strong>User request:</strong> The user can explicitly request a memory reset</li>
+      <li><strong>Context drift detection:</strong> The system detects the agent is operating on stale assumptions and triggers a reset</li>
+    </ul>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — The "Freshness" Concept:</strong> The exam is big on <strong>memory freshness</strong>. Imagine an agent that memorized your database schema 30 days ago. If the schema changed last week, that memory is stale. The 28-day expiration window in Copilot Memory is designed to prevent exactly this problem. When you see a question about stale information, the answer always involves <strong>expiration</strong>, <strong>pruning</strong>, or <strong>refreshing</strong> from durable artifacts.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: Copilot Memory — Deep Dive                       -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>4. Copilot Memory — Repository Facts and User Preferences</h2>
+    <p>Copilot Memory is the GitHub-specific implementation of long-term memory. It's the mechanism that allows GitHub Copilot (both the IDE extension and the CLI agent) to retain knowledge across sessions. Let me give you the exam-relevant details.</p>
+
+    <h3>Repository-Level Facts</h3>
+    <p>When an agent works in a repository, Copilot Memory learns facts about that repository:</p>
+    <ul>
+      <li><strong>Key file locations:</strong> Where the main entry point, configuration files, and test suites live</li>
+      <li><strong>Architectural patterns:</strong> How the codebase is organized (e.g., MVC, microservices, monorepo)</li>
+      <li><strong>API contracts:</strong> Function signatures, return types, and expected inputs</li>
+      <li><strong>Code conventions:</strong> Naming conventions, file structure, import patterns</li>
+      <li><strong>Documentation references:</strong> Key README sections, wiki pages, architectural decision records</li>
+    </ul>
+    <p>These facts are <strong>repository-scoped</strong> — an agent working in repo A cannot access facts learned in repo B. This is a security and isolation mechanism.</p>
+
+    <h3>User-Level Preferences</h3>
+    <p>Copilot Memory also stores preferences tied to the <strong>user</strong> (not the repository):</p>
+    <ul>
+      <li><strong>Coding style preferences:</strong> Tabs vs spaces, naming conventions, comment styles</li>
+      <li><strong>Testing preferences:</strong> Preferred test framework, coverage requirements, mocking strategy</li>
+      <li><strong>Tooling preferences:</strong> Which linter, formatter, or build system the user prefers</li>
+      <li><strong>Workflow habits:</strong> Whether the user prefers PRs or direct commits, rebase or merge</li>
+    </ul>
+
+    <h3>28-Day Auto-Deletion</h3>
+    <p>This is the single most important Copilot Memory detail for the exam. All memories have a <strong>28-day time-to-live (TTL)</strong>:</p>
+    <ul>
+      <li>Every memory entry has a creation timestamp</li>
+      <li>After 28 days, the entry is automatically deleted</li>
+      <li>Accessing or reinforcing a memory resets its TTL</li>
+      <li>Deleted memories cannot be recovered — they must be re-learned</li>
+    </ul>
+    <p>This design prevents <strong>knowledge drift</strong> — the risk that the agent acts on outdated information. It also means agents must regularly interact with the repository to keep their memory fresh.</p>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Critical Exam Detail:</strong> The 28-day TTL applies to <strong>Copilot Memory only</strong>, not to durable artifacts. A commit you made 6 months ago is still accessible via Git history. But a preference Copilot learned about your coding style 6 months ago will have been deleted after 28 days if not reinforced. The exam WILL ask: "An agent needs to remember a fact from last year." The answer is NOT Copilot Memory — it's a durable artifact (a commit, a PR, a file in the repo).</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: State Persistence — Durable Artifacts             -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>5. State Persistence via Durable Artifacts</h2>
+    <p>When an agent needs to preserve state <strong>permanently</strong>, it uses <strong>durable artifacts</strong>. These are the concrete outputs of agent activity that survive session termination and agent restarts.</p>
+
+    <h3>Types of Durable Artifacts</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Artifact</th>
+          <th>Persistence Mechanism</th>
+          <th>Example Use Case</th>
+        </tr>
+        <tr>
+          <td><strong>Commits</strong></td>
+          <td>Git history (immutable after push)</td>
+          <td>Agent writes a fix, commits it, and pushes — the change is permanent</td>
+        </tr>
+        <tr>
+          <td><strong>Pull Requests</strong></td>
+          <td>GitHub database (persistent)</td>
+          <td>Agent creates a PR with a proposed change — the thread and diff persist</td>
+        </tr>
+        <tr>
+          <td><strong>Workflow Logs</strong></td>
+          <td>GitHub Actions log storage (90-day retention)</td>
+          <td>Agent runs a CI pipeline — every output and error is logged</td>
+        </tr>
+        <tr>
+          <td><strong>Issues &amp; Comments</strong></td>
+          <td>GitHub database (persistent)</td>
+          <td>Agent files a bug report with diagnostic information</td>
+        </tr>
+        <tr>
+          <td><strong>Releases &amp; Tags</strong></td>
+          <td>GitHub releases (persistent)</td>
+          <td>Agent cuts a release with changelog and binary artifacts</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Artifact as Memory</h3>
+    <p>Durable artifacts serve as an <strong>external memory store</strong>. When an agent starts a new session, it can read durable artifacts to reconstruct context. For example:</p>
+    <ul>
+      <li>Reading a previous PR's description to understand why a change was made</li>
+      <li>Inspecting workflow logs to diagnose a previous CI failure</li>
+      <li>Reviewing issues to understand the history of a bug</li>
+    </ul>
+    <p>This is the pattern the exam expects: <strong>short-term memory</strong> for the current session, <strong>Copilot Memory</strong> for cross-session preferences and facts, and <strong>durable artifacts</strong> for permanent state that must survive everything.</p>
+
+    <div class="callout tip">
+      <p><strong>🎓 Teaching Tip — The "Write It Down" Rule:</strong> If you want an agent to remember something permanently, the answer is always: <strong>write it to a durable artifact</strong>. Commit a config file. Open an issue. Post a comment. Create a PR. If the memory exists only in the agent's short-term or long-term memory, it's temporary. The exam loves this distinction.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Context Drift                                     -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>6. Context Drift: Detection, Correction, and Re-Planning</h2>
+    <p><strong>Context drift</strong> is what happens when the agent's internal model of the world diverges from reality. It's one of the most dangerous failure modes in agentic systems because it's silent — the agent doesn't know it's operating on outdated assumptions.</p>
+
+    <h3>What Causes Context Drift?</h3>
+    <ul>
+      <li><strong>Stale memory:</strong> The agent remembers a file structure that has since changed</li>
+      <li><strong>External state changes:</strong> An environment variable, API response, or database state changed without the agent noticing</li>
+      <li><strong>Concurrent modifications:</strong> Another agent or human changed files while this agent was working</li>
+      <li><strong>Time-sensitive information:</strong> The agent is using timing-dependent data (e.g., rate limits, token expiration) that is no longer valid</li>
+      <li><strong>Erroneous assumptions:</strong> The agent inferred something about the system that was never true</li>
+    </ul>
+
+    <h3>Detection Strategies</h3>
+    <p>The exam expects you to know how context drift is detected:</p>
+    <ul>
+      <li><strong>Re-read confirmation:</strong> Before making a change, the agent re-reads the file to verify its mental model matches reality</li>
+      <li><strong>Timestamp checking:</strong> Comparing the agent's last-known state timestamp with the actual file modification timestamp</li>
+      <li><strong>Consistency validation:</strong> Running validation checks (e.g., parsing config files) to confirm expected structure</li>
+      <li><strong>Diff comparison:</strong> Comparing the expected file content with the actual content before editing</li>
+    </ul>
+
+    <h3>Correction and Re-Planning</h3>
+    <p>Once context drift is detected, the agent must:</p>
+    <ol>
+      <li><strong>Flag the drift:</strong> Log the discrepancy for auditability</li>
+      <li><strong>Refresh context:</strong> Re-read the relevant files, re-query the environment, and rebuild the mental model</li>
+      <li><strong>Re-plan:</strong> Re-evaluate the plan against the corrected context — the original plan may no longer be valid</li>
+      <li><strong>Escalate if needed:</strong> If the drift is severe enough to invalidate the entire plan, escalate to a human</li>
+    </ol>
+
+    <h3>Preventing Context Drift</h3>
+    <p>Prevention is better than correction. Best practices include:</p>
+    <ul>
+      <li><strong>Validate before each write:</strong> Re-read the target file immediately before editing</li>
+      <li><strong>Use transactions:</strong> Group related changes so partial failures don't leave inconsistent state</li>
+      <li><strong>Short task durations:</strong> Shorter tasks are less likely to experience drift than long-running tasks</li>
+      <li><strong>Environment checks:</strong> Verify environment variables, service health, and auth tokens at the start of each task</li>
+    </ul>
+
+    <div class="callout warning">
+      <p><strong>⚠️ Exam Trap:</strong> A common wrong answer on context drift questions is "just retry the operation." Retrying without refreshing context will fail the same way — the agent will use the same stale assumptions. The correct response is always <strong>re-read → re-validate → re-plan</strong>, not just retry. If you see a question where an agent keeps failing the same operation, look for the answer that includes re-reading the current state.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: Continuity Across Tools & Environments            -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>7. Continuity Across Tools and Environments</h2>
+    <p>Modern agent workflows span multiple tools and environments. An agent might start work in the IDE, continue in the CLI, and execute in CI — all within the same task. The exam tests whether you understand how continuity is maintained across these boundaries.</p>
+
+    <h3>The Continuity Challenge</h3>
+    <p>Each environment has different capabilities and limitations:</p>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Environment</th>
+          <th>Memory Available</th>
+          <th>Continuity Mechanism</th>
+        </tr>
+        <tr>
+          <td><strong>IDE (VS Code)</strong></td>
+          <td>Short-term + Copilot Memory</td>
+          <td>Session persists as long as editor is open; Copilot Memory bridges sessions</td>
+        </tr>
+        <tr>
+          <td><strong>CLI (gh copilot)</strong></td>
+          <td>Short-term (CLI session) + Copilot Memory</td>
+          <td>CLI sessions are independent; shared Copilot Memory provides continuity</td>
+        </tr>
+        <tr>
+          <td><strong>CI (GitHub Actions)</strong></td>
+          <td>Short-term (workflow run) only</td>
+          <td>No cross-run memory; relies on durable artifacts (logs, artifacts, git state)</td>
+        </tr>
+        <tr>
+          <td><strong>Codespaces</strong></td>
+          <td>Short-term + Copilot Memory</td>
+          <td>Workspace persists while Codespace is running; Copilot Memory bridges stops/starts</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Continuity Patterns</h3>
+    <p>The exam expects you to know how to design for continuity:</p>
+    <ul>
+      <li><strong>Checkpoint artifacts:</strong> Write intermediate state to files (JSON, YAML) that the next environment can read</li>
+      <li><strong>Shared configuration:</strong> Use <code>.github/copilot-instructions.md</code> and <code>.github/instructions/*.instructions.md</code> so all environments have the same behavioral guidelines</li>
+      <li><strong>Token-based identity:</strong> Use GitHub tokens (GitHub App installation tokens or PATs) so the agent can authenticate in any environment</li>
+      <li><strong>State files in the repo:</strong> Store agent progress state in a well-known path like <code>.github/agent-state/</code></li>
+    </ul>
+
+    <div class="code-block"># Example: Continuity via checkpoint file
+# Written by IDE agent, read by CI agent
+
+.github/agent-state/task-42-checkpoint.json:
+{
+  "task_id": "42",
+  "phase": "code-review",
+  "files_scanned": [
+    "src/auth/login.ts",
+    "src/auth/register.ts"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "file": "src/auth/login.ts",
+      "line": 45,
+      "description": "SQL injection vulnerability in raw query"
+    }
+  ],
+  "next_environment": "ci",
+  "continuation_url": "https://github.com/org/repo/actions/runs/12345"
+}</div>
+
+    <div class="callout tip">
+      <p><strong>📘 Teaching Tip — Environment Handoff:</strong> On the exam, questions about environment handoff are really testing <strong>durable artifact usage</strong>. The agent in environment A writes its state to a file (commit or artifact), and the agent in environment B reads that file to continue. There's no magic "environment bridge" — it's always: <em>write state, transfer via artifact, read state</em>. Remember this pattern and you'll get every continuity question right.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: Memory & State Summary Table                      -->
+  <!-- ============================================================ -->
+  <div class="section">
+    <h2>8. Domain 3 Quick Reference</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Concept</th>
+          <th>Key Detail</th>
+          <th>Exam Tip</th>
+        </tr>
+        <tr>
+          <td>Short-Term Memory</td>
+          <td>Session-scoped, volatile, lost on session end</td>
+          <td>Also called "session memory" — do not confuse with Copilot Memory</td>
+        </tr>
+        <tr>
+          <td>Copilot Memory</td>
+          <td>28-day TTL, auto-deletion, repository + user scoped</td>
+          <td>Tier 2 — remembers preferences and facts across sessions</td>
+        </tr>
+        <tr>
+          <td>Durable Artifacts</td>
+          <td>Commits, PRs, workflow logs, issues — permanent</td>
+          <td>Tier 3 — the only permanent memory; use for anything that must survive</td>
+        </tr>
+        <tr>
+          <td>Memory Scoping</td>
+          <td>Restricts which memories are visible per task/repo</td>
+          <td>Prevents irrelevant data from cluttering the context window</td>
+        </tr>
+        <tr>
+          <td>Context Drift</td>
+          <td>Agent's internal model diverges from reality</td>
+          <td>Fix: re-read, re-validate, re-plan — never just retry</td>
+        </tr>
+        <tr>
+          <td>Continuity</td>
+          <td>State passed between environments via durable artifacts</td>
+          <td>Write state → transfer via artifact → read state in next environment</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="domain-2.html">&larr; D2: Tooling &amp; MCP</a>
+    <a href="domain-4.html">D4: Evaluation &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Domain 3 · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+</body>
+</html>

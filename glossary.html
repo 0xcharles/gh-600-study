@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GH-600 Glossary of Terms — GH-600 Study</title>
+<meta name="description" content="Comprehensive A-Z glossary of all exam-critical GH-600 terms — Agent through Autonomy Mismatch, with definitions, exam context, and related file paths">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Glossary-specific styles */
+  .glossary-search {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    margin-bottom: 8px;
+  }
+  .glossary-search:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+  .glossary-search::placeholder {
+    color: var(--text-secondary);
+    opacity: .6;
+  }
+  .glossary-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .glossary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    transition: all .2s;
+  }
+  .glossary-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+  .glossary-card .term-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .glossary-card .term-name .term-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .glossary-card .term-def {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .glossary-card .term-def strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .glossary-card .term-path {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+    background: var(--border-light);
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 2px;
+  }
+  .glossary-card .term-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .term-tag.arch { background: #dbeafe; color: #1d4ed8; }
+  .term-tag.mcp { background: #ede9fe; color: #6d28d9; }
+  .term-tag.mem { background: #fef3c7; color: #d97706; }
+  .term-tag.tool { background: #d1fae5; color: #059669; }
+  .term-tag.eval { background: #fee2e2; color: #dc2626; }
+  .term-tag.guard { background: #e0e7ff; color: #3730a3; }
+  .term-tag.agent { background: #fce7f3; color: #be185d; }
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-size: 15px;
+  }
+  .alphabet-strip {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .alphabet-strip a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all .15s;
+  }
+  .alphabet-strip a:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  @media(max-width:640px){
+    .glossary-card { padding: 14px 16px; }
+    .alphabet-strip a { width: 26px; height: 26px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo"><span>GH-</span>600</div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="domain-1.html">D1: Architecture</a>
+      <a href="domain-2.html">D2: Tooling &amp; MCP</a>
+      <a href="domain-3.html">D3: Memory &amp; State</a>
+      <a href="domain-4.html">D4: Evaluation</a>
+      <a href="domain-5.html">D5: Multi-Agent</a>
+      <a href="domain-6.html">D6: Guardrails</a>
+      <a href="glossary.html" class="active">Glossary</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">Exam Reference</div>
+  <h1>GH-600 Glossary of Terms</h1>
+  <p>Every exam-critical term defined in context. Each entry includes exam context, related file paths, and domain tags. Use the search box to quickly find any term.</p>
+</section>
+
+<main class="main">
+
+  <div class="section">
+
+    <!-- Search input -->
+    <input type="text" class="glossary-search" id="glossarySearch" placeholder="Search terms, definitions, or file paths..." oninput="filterGlossary()">
+
+    <!-- Alphabet strip -->
+    <div class="alphabet-strip" id="alphabetStrip"></div>
+
+    <!-- Count -->
+    <div class="glossary-count" id="glossaryCount">Showing all 40 terms</div>
+
+    <!-- Glossary grid -->
+    <div class="glossary-grid" id="glossaryGrid">
+
+      <!-- A -->
+      <div class="glossary-card" data-term="Agent">
+        <div class="term-name"><span class="term-letter">A</span> Agent <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">An <strong>autonomous AI system</strong> that takes actions against real infrastructure within the SDLC. Unlike chatbots that only answer questions, agents execute tool calls — reading, editing, running commands, delegating sub-tasks, and persisting results. The exam defines agents by their <strong>autonomy level</strong> and <strong>tool set</strong>.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Agent profile">
+        <div class="term-name"><span class="term-letter">A</span> Agent Profile <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">A Markdown file with YAML frontmatter at <code>.github/agents/*.agent.md</code> that defines an agent's <strong>description</strong> (required), <strong>name</strong>, <strong>tools</strong>, <strong>mcp-servers</strong>, <strong>target</strong>, <strong>model</strong>, and <strong>disable-model-invocation</strong>. The <code>description</code> field is the <strong>only required</strong> field.</div>
+        <div class="term-path">.github/agents/*.agent.md</div>
+      </div>
+
+      <div class="glossary-card" data-term="Autonomy level">
+        <div class="term-name"><span class="term-letter">A</span> Autonomy Level <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">Three-tier classification of agent freedom: <strong>Low</strong> (read, search only), <strong>Medium</strong> (adds edit, execute approved scripts, create PRs), <strong>High</strong> (adds sub-agent delegation, MCP servers, unrestricted shell). The rule: <em>start low, escalate only when needed</em>.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Autonomy mismatch">
+        <div class="term-name"><span class="term-letter">A</span> Autonomy Mismatch <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">An <strong>anti-pattern</strong> where an agent is granted more autonomy than a task requires (over-privileged) or less than it needs (under-privileged). Over-privileged agents create unnecessary risk; under-privileged agents can't complete their work. Fix: <strong>match the minimum autonomy level to the task's actual requirements</strong>.</div>
+      </div>
+
+      <!-- B -->
+      <div class="glossary-card" data-term="Branch protection">
+        <div class="term-name"><span class="term-letter">B</span> Branch Protection <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">GitHub rules that <strong>prevent direct pushes</strong> to protected branches (typically <code>main</code> or <code>production</code>). Requirements include: pull request reviews, passing status checks, up-to-date branches, and no force pushes. <strong>Essential for agent governance</strong> — agents should never bypass branch protection.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Bypass list">
+        <div class="term-name"><span class="term-letter">B</span> Bypass List <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">A configured list of <strong>entities (users, teams, apps) that are exempt</strong> from specific ruleset or branch protection requirements. In agent contexts, a bypass list might allow a specific CI agent to merge without human review while requiring it for all other agents. <strong>Use sparingly</strong> — bypass lists reduce governance.</div>
+      </div>
+
+      <!-- C -->
+      <div class="glossary-card" data-term="Case study">
+        <div class="term-name"><span class="term-letter">C</span> Case Study <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">A <strong>scenario-based exam question format</strong> on the GH-600. Each case study presents a realistic agent system scenario with multiple sub-questions. You must analyze the situation, identify problems, and choose the correct architectural decisions. There are <strong>2 case studies</strong> on the exam (56 questions total).</div>
+      </div>
+
+      <div class="glossary-card" data-term="CI integration">
+        <div class="term-name"><span class="term-letter">C</span> CI Integration <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The process of <strong>running agents within GitHub Actions CI pipelines</strong>. Configured via <code>.github/workflows/copilot-setup-steps.yml</code> which sets up the environment before agent execution. CI agents use token-based authentication (GitHub App installation tokens or PATs) and operate with <strong>short-term memory only</strong> (no cross-run persistence).</div>
+        <div class="term-path">.github/workflows/copilot-setup-steps.yml</div>
+      </div>
+
+      <div class="glossary-card" data-term="Concurrency">
+        <div class="term-name"><span class="term-letter">C</span> Concurrency <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">The ability of multiple agents to <strong>operate simultaneously</strong> on the same repository or workflow. Concurrency introduces risks of conflict (two agents editing the same file), race conditions, and coordination failures. Managed through <strong>isolation strategies</strong>, <strong>branch strategies</strong>, and <strong>GitHub Actions concurrency groups</strong>.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Context drift">
+        <div class="term-name"><span class="term-letter">C</span> Context Drift <span class="term-tag mem">Domain 3</span></div>
+        <div class="term-def">When an agent's <strong>internal model of the world diverges from reality</strong>. Caused by stale memory, external state changes, concurrent modifications, or erroneous assumptions. Detection strategies include <strong>re-read confirmation</strong>, <strong>timestamp checking</strong>, and <strong>consistency validation</strong>. Correction: <em>re-read → re-validate → re-plan</em>.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Control plane">
+        <div class="term-name"><span class="term-letter">C</span> Control Plane <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">The <strong>central management layer</strong> that governs all agent activity. GitHub serves as the control plane for agentic AI systems — it manages agent registration, authentication, authorization, audit logging, and governance policies. The control plane is <strong>distinct from the data plane</strong> (where agents execute actions).</div>
+      </div>
+
+      <div class="glossary-card" data-term="Copilot Memory">
+        <div class="term-name"><span class="term-letter">C</span> Copilot Memory <span class="term-tag mem">Domain 3</span></div>
+        <div class="term-def">GitHub's <strong>long-term memory</strong> implementation for Copilot agents. Stores <strong>repository-level facts</strong> (key files, architecture patterns, API contracts) and <strong>user-level preferences</strong> (coding style, testing conventions). Has a <strong>28-day auto-deletion</strong> policy — memories not reinforced within 28 days are automatically pruned.</div>
+      </div>
+
+      <!-- D -->
+      <div class="glossary-card" data-term="Durable artifact">
+        <div class="term-name"><span class="term-letter">D</span> Durable Artifact <span class="term-tag mem">Domain 3</span></div>
+        <div class="term-def">A <strong>permanent record</strong> of agent activity that survives session termination. Includes <strong>commits</strong> (Git history), <strong>PRs</strong> (change proposals with reviews), <strong>workflow logs</strong> (CI execution records, 90-day retention), and <strong>issues/comments</strong> (persistent threads). Durable artifacts are the <strong>system of record</strong> for agent actions.</div>
+      </div>
+
+      <!-- E -->
+      <div class="glossary-card" data-term="Environment protection">
+        <div class="term-name"><span class="term-letter">E</span> Environment Protection <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">GitHub <strong>deployment protection rules</strong> that gate deployments to specific environments (e.g., production, staging). Rules include: required reviewers, waiting periods, and deployment branch restrictions. <strong>Critical for agent governance</strong> — prevents agents from deploying without human approval.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Error handling">
+        <div class="term-name"><span class="term-letter">E</span> Error Handling <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The <strong>retry, rollback, and escalation patterns</strong> that govern what an agent does when a tool call fails. Best practices: implement <strong>exponential backoff</strong> for transient errors, <strong>rollback changes</strong> on critical failures, and <strong>escalate to a human</strong> when retries are exhausted. <strong>Silent failure</strong> (agent fails without notification) is a key anti-pattern.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Evaluation">
+        <div class="term-name"><span class="term-letter">E</span> Evaluation <span class="term-tag eval">Domain 4</span></div>
+        <div class="term-def">The process of <strong>measuring agent output against defined success criteria</strong>. Core to the <strong>Plan-Act-Evaluate (PAE)</strong> loop. Uses <strong>evaluation signals</strong> (functional, quality, compliance, process) to determine if an agent performed correctly. Includes automated scanning (CodeQL, Dependabot, Secret Scanning) and human review (PR review).</div>
+      </div>
+
+      <!-- F -->
+      <div class="glossary-card" data-term="execute">
+        <div class="term-name"><span class="term-letter">E</span> execute (Tool) <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The tool that allows the agent to <strong>run shell commands, scripts, tests, and build commands</strong> in the workspace. Permission level: <strong>Write + Execute</strong> (orange). Used when the agent needs to <em>run</em> code. <strong>Not</strong> for editing files — that's the <strong>edit</strong> tool. <strong>Exam tip:</strong> Never choose <code>execute</code> when <code>edit</code> will do — that's privilege creep.</div>
+      </div>
+
+      <div class="glossary-card" data-term="edit">
+        <div class="term-name"><span class="term-letter">E</span> edit (Tool) <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The tool that allows the agent to <strong>create, modify, or delete files</strong> in the workspace. Permission level: <strong>Write</strong> (yellow). Used when the agent needs to <em>change</em> code but doesn't need to run anything. Part of the five core agent tools in the least-privilege hierarchy.</div>
+      </div>
+
+      <!-- F (agent tool) -->
+      <div class="glossary-card" data-term="agent">
+        <div class="term-name"><span class="term-letter">A</span> agent (Tool) <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The tool that allows an agent to <strong>delegate tasks to a sub-agent</strong> — spawning a new agent loop with its own toolchain. Permission level: <strong>Highest autonomy</strong> (red). Used to parallelize complex multi-step work or use specialized sub-agents. <strong>Highest-risk tool</strong> — requires strong governance.</div>
+      </div>
+
+      <div class="glossary-card" data-term="read">
+        <div class="term-name"><span class="term-letter">R</span> read (Tool) <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The tool that allows the agent to <strong>read files and directories</strong> from the workspace. Permission level: <strong>Read-only</strong> (green). Used when the agent needs to <em>see</em> code but not change it. The <strong>lowest-privilege</strong> tool in the hierarchy — always prefer <code>read</code> when the task only requires information gathering.</div>
+      </div>
+
+      <div class="glossary-card" data-term="search">
+        <div class="term-name"><span class="term-letter">S</span> search (Tool) <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The tool that allows the agent to <strong>search code, issues, PRs, and repository content</strong> via semantic or regex matching. Permission level: <strong>Read-only</strong> (green). Used when the agent needs to <em>find</em> something before it can read it. Unlike <code>read</code> which requires a known path, <code>search</code> discovers content across the repository.</div>
+      </div>
+
+      <!-- F cont. -->
+      <div class="glossary-card" data-term="Fleet">
+        <div class="term-name"><span class="term-letter">F</span> Fleet (/fleet) <span class="term-tag arch">Domain 5</span></div>
+        <div class="term-def">A <strong>group of agents</strong> managed as a single unit within a GitHub organization. Fleet management allows centralized configuration, monitoring, and policy enforcement across multiple agents. The <code>/fleet</code> endpoint or concept relates to <strong>multi-agent orchestration</strong> and fleet-wide coordination.</div>
+        <div class="term-path">/fleet (endpoint / management concept)</div>
+      </div>
+
+      <!-- G -->
+      <div class="glossary-card" data-term="Guardrails">
+        <div class="term-name"><span class="term-letter">G</span> Guardrails <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">The <strong>safety boundaries and governance controls</strong> that constrain agent behavior. Include: <strong>rulesets</strong> (repo-level policies), <strong>branch protection</strong> (prevent direct pushes), <strong>environment protection</strong> (deployment gates), <strong>CODEOWNERS</strong> (required reviewers), and <strong>autonomy levels</strong> (capability limits). Guardrails are the <strong>primary mechanism for safe agent deployment</strong>.</div>
+      </div>
+
+      <!-- L -->
+      <div class="glossary-card" data-term="Least privilege">
+        <div class="term-name"><span class="term-letter">L</span> Least Privilege <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">The <strong>security principle</strong> that an agent should be granted only the minimum permissions necessary to complete its task. Applied through tool selection (choose <code>read</code> over <code>edit</code>, <code>edit</code> over <code>execute</code>), tool configuration (restrict commands and directories), and autonomy levels. <strong>The single most tested concept in Domain 2.</strong></div>
+      </div>
+
+      <div class="glossary-card" data-term="Long-term memory">
+        <div class="term-name"><span class="term-letter">L</span> Long-Term Memory <span class="term-tag mem">Domain 3</span></div>
+        <div class="term-def"><strong>Tier 2</strong> of the three-tier memory hierarchy. Persists <strong>across sessions</strong> via <strong>Copilot Memory</strong>. Stores repository-level facts and user-level preferences. Has a <strong>28-day TTL</strong> with auto-deletion. Distinguished from <strong>short-term memory</strong> (session-scoped, volatile) and <strong>durable artifacts</strong> (permanent records).</div>
+      </div>
+
+      <!-- M -->
+      <div class="glossary-card" data-term="Matrix strategy">
+        <div class="term-name"><span class="term-letter">M</span> Matrix Strategy <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">A <strong>GitHub Actions feature</strong> that allows running a job across multiple combinations of variables (e.g., different OS, runtime versions, environments). In agent contexts, a matrix strategy enables testing agent behavior across <strong>multiple configurations</strong> simultaneously, providing <strong>comprehensive evaluation signals</strong> in a single workflow run.</div>
+      </div>
+
+      <div class="glossary-card" data-term="MCP">
+        <div class="term-name"><span class="term-letter">M</span> MCP <span class="term-tag mcp">Domain 2</span></div>
+        <div class="term-def"><strong>Model Context Protocol</strong> — an open standard that lets AI agents connect to external tools, data sources, and services through a standardized interface. Described as <strong>"USB-C for AI agents"</strong>. MCP architecture: Agent → MCP Client → MCP Server → External Service. Configured via <code>.mcp.json</code>, <code>.github/mcp.json</code>, or <code>.vscode/mcp.json</code>.</div>
+        <div class="term-path">.mcp.json · .github/mcp.json · .vscode/mcp.json</div>
+      </div>
+
+      <div class="glossary-card" data-term="MCP allow list">
+        <div class="term-name"><span class="term-letter">M</span> MCP Allow List <span class="term-tag mcp">Domain 2</span></div>
+        <div class="term-def">A <strong>security control</strong> that specifies which MCP servers an agent is permitted to use. Defined in the agent profile under the <code>mcp-servers</code> field. An empty list means <strong>no MCP access</strong>. This is the <strong>primary mechanism for least privilege</strong> in MCP context — agents should only connect to servers they actually need.</div>
+      </div>
+
+      <div class="glossary-card" data-term="MCP registry">
+        <div class="term-name"><span class="term-letter">M</span> MCP Registry <span class="term-tag mcp">Domain 2</span></div>
+        <div class="term-def">A <strong>centralized catalog</strong> of available MCP servers that agents can discover and connect to. The registry provides server metadata, connection details, authentication requirements, and capability descriptions. Enables <strong>dynamic server discovery</strong> — agents can find and connect to registered servers without hard-coded configuration.</div>
+      </div>
+
+      <div class="glossary-card" data-term="MCP server">
+        <div class="term-name"><span class="term-letter">M</span> MCP Server <span class="term-tag mcp">Domain 2</span></div>
+        <div class="term-def">A <strong>service that implements the Model Context Protocol</strong>, exposing tools, data, or capabilities that agents can consume. Each MCP server has a name, host, port, authentication method, and set of available tools. Defined in MCP configuration files (<code>.mcp.json</code>) and referenced in agent profiles via the <code>mcp-servers</code> field.</div>
+      </div>
+
+      <!-- N -->
+      <div class="glossary-card" data-term="needs">
+        <div class="term-name"><span class="term-letter">N</span> needs <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">A <strong>GitHub Actions keyword</strong> that defines job dependencies. In agent workflows, <code>needs</code> is used to <strong>separate planning from execution</strong> — a plan job runs first, the human reviews, then the execution job runs <code>if: needs.plan.result == 'success'</code>. This enforces the <strong>plan-review-execution gate</strong> pattern.</div>
+      </div>
+
+      <!-- P -->
+      <div class="glossary-card" data-term="Plan-Act-Evaluate">
+        <div class="term-name"><span class="term-letter">P</span> Plan-Act-Evaluate (PAE) <span class="term-tag eval">Domain 4</span></div>
+        <div class="term-def">The <strong>core feedback loop</strong> for all agentic AI systems. <strong>Plan:</strong> Agent generates a proposed approach. <strong>Act:</strong> Agent executes the plan (with human review gate). <strong>Evaluate:</strong> Agent's output is measured against success criteria. The loop repeats iteratively to improve agent quality. <strong>The foundational model for Domain 4.</strong></div>
+      </div>
+
+      <div class="glossary-card" data-term="Plan-as-checklist">
+        <div class="term-name"><span class="term-letter">P</span> Plan-as-Checklist <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">An <strong>anti-pattern</strong> where an agent treats its plan as a <strong>rigid checklist</strong> rather than a set of intended outcomes. The agent generates a plan, the human approves it, and then the agent executes <em>exactly</em> what it said — even if conditions change. Fix: treat plans as <strong>reviewable intent</strong>, not fixed contracts. Agents should re-evaluate against current state.</div>
+      </div>
+
+      <!-- R -->
+      <div class="glossary-card" data-term="Root cause analysis">
+        <div class="term-name"><span class="term-letter">R</span> Root Cause Analysis <span class="term-tag eval">Domain 4</span></div>
+        <div class="term-def">The process of tracing agent failures from <strong>symptom → root cause → fix</strong>. Uses a structured decision framework: Is the <strong>configuration</strong> correct? Are the <strong>instructions</strong> complete? Are <strong>evaluation signals</strong> catching the right things? The exam tests your ability to match symptoms (e.g., "agent produces wrong code") to root causes ("instructions too vague") and fixes ("add detailed instructions").</div>
+      </div>
+
+      <div class="glossary-card" data-term="Ruleset">
+        <div class="term-name"><span class="term-letter">R</span> Ruleset <span class="term-tag guard">Domain 6</span></div>
+        <div class="term-def">A <strong>configurable set of policies</strong> enforced at the repository or organization level. Rulesets control: branch protection, required checks, merge requirements, commit signing, and file-level restrictions. More flexible than traditional branch protection — rulesets can target <strong>specific users, teams, or apps</strong> including bypass lists for agent contexts.</div>
+      </div>
+
+      <!-- S -->
+      <div class="glossary-card" data-term="Session logs">
+        <div class="term-name"><span class="term-letter">S</span> Session Logs <span class="term-tag eval">Domain 4</span></div>
+        <div class="term-def">The <strong>complete timestamped record</strong> of an agent's interaction — every prompt, every tool call, every output, every error. Used for <strong>post-mortem analysis</strong>, debugging failures, and auditing agent decisions. The <strong>first diagnostic step</strong> when an agent produces unexpected output is always: check the session logs.</div>
+      </div>
+
+      <div class="glossary-card" data-term="Short-term memory">
+        <div class="term-name"><span class="term-letter">S</span> Short-Term Memory <span class="term-tag mem">Domain 3</span></div>
+        <div class="term-def"><strong>Tier 1</strong> of the three-tier memory hierarchy. The agent's <strong>working memory</strong> for the current conversation or session. Includes conversation history, in-session decisions, intermediate results, and temporary state. <strong>Volatile</strong> — disappears when the session ends. Also called <strong>session memory</strong>. Do not confuse with <strong>Copilot Memory</strong> (long-term).</div>
+      </div>
+
+      <div class="glossary-card" data-term="System of record">
+        <div class="term-name"><span class="term-letter">S</span> System of Record <span class="term-tag arch">Domain 1</span></div>
+        <div class="term-def">The <strong>authoritative data source</strong> for agent activity. GitHub serves as the system of record — all agent actions (commits, PRs, issues, workflow runs, comments) are recorded permanently. The control plane governs the system of record. <strong>Durable artifacts</strong> are the evidence stored in the system of record.</div>
+      </div>
+
+      <!-- T -->
+      <div class="glossary-card" data-term="Tool">
+        <div class="term-name"><span class="term-letter">T</span> Tool <span class="term-tag tool">Domain 2</span></div>
+        <div class="term-def">A <strong>capability</strong> that an agent can use to interact with the outside world. The five core tools are <strong>read</strong>, <strong>search</strong>, <strong>edit</strong>, <strong>execute</strong>, and <strong>agent</strong>. Additional tools include <strong>web</strong> (HTTP requests, must be explicitly enabled) and <strong>todo</strong> (task management, workspace-specific). Tools form a <strong>permission hierarchy</strong> from read-only (lowest) to agent (highest).</div>
+      </div>
+
+      <div class="glossary-card" data-term="Tool tuning">
+        <div class="term-name"><span class="term-letter">T</span> Tool Tuning <span class="term-tag eval">Domain 4</span></div>
+        <div class="term-def">One of the <strong>four tuning levers</strong> for improving agent performance. Involves adjusting which tools an agent has access to, adding tool-specific constraints (restricted commands, allowed directories), enabling/disabling the <strong>web</strong> tool, or adding/removing the <strong>agent</strong> tool. <strong>Second priority lever</strong> after instructions — lower risk than environment or MCP changes.</div>
+      </div>
+
+    </div>
+
+    <div class="no-results" id="noResults" style="display:none;">
+      <p>No terms match your search. Try a different keyword or browse by letter above.</p>
+    </div>
+
+  </div>
+
+  <div class="nav-links">
+    <a href="domain-6.html">&larr; D6: Guardrails</a>
+    <a href="resources.html">Resources &rarr;</a>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>GH-600 Study Guide Glossary · Based on official Microsoft Learn modules and GitHub Docs · Not affiliated with GitHub or Microsoft</p>
+</footer>
+
+<script>
+// Build alphabet strip
+(function() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const strip = document.getElementById('alphabetStrip');
+  const cards = document.querySelectorAll('.glossary-card');
+  const available = new Set();
+  cards.forEach(c => {
+    const term = c.getAttribute('data-term');
+    if (term) available.add(term[0].toUpperCase());
+  });
+  letters.forEach(l => {
+    const a = document.createElement('a');
+    a.textContent = l;
+    a.href = '#';
+    if (!available.has(l)) {
+      a.style.opacity = '0.3';
+      a.style.cursor = 'default';
+    } else {
+      a.onclick = function(e) {
+        e.preventDefault();
+        const target = document.querySelector(`.glossary-card[data-term^="${l}"]`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.borderColor = 'var(--primary)';
+          target.style.boxShadow = 'var(--shadow-md)';
+          setTimeout(() => {
+            target.style.borderColor = '';
+            target.style.boxShadow = '';
+          }, 2000);
+        }
+      };
+    }
+    strip.appendChild(a);
+  });
+})();
+
+function filterGlossary() {
+  const q = document.getElementById('glossarySearch').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.glossary-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const text = c.textContent.toLowerCase();
+    if (!q || text.includes(q)) {
+      c.style.display = '';
+      visible++;
+    } else {
+      c.style.display = 'none';
+    }
+  });
+  document.getElementById('glossaryCount').textContent = `Showing ${visible} of ${cards.length} terms`;
+  document.getElementById('noResults').style.display = visible === 0 ? '' : 'none';
+}
+</script>
+
+</body>
+</html>
