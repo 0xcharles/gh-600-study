@@ -176,9 +176,59 @@
       </div>
       <div class="card">
         <div class="card-icon">▶️</div>
-        <h4>Microsoft Reactor Deep Dive</h4>
-        <p>1-hour comprehensive walkthrough of exam domains and study tips.<br><a href="https://www.youtube.com/watch?v=bgj20o0kYKg" target="_blank">Watch on YouTube</a></p>
+        <h4>Agent Orchestration On-Demand</h4>
+        <p>Ari's earlier Reactor session on building multi-agent teams (orchestrator, planner, coder, designer).</p>
       </div>
+      <div class="card">
+        <div class="card-icon">▶️</div>
+        <h4>Microsoft Reactor Deep Dive</h4>
+        <p>1-hour walkthrough by Ari Levigny (GitHub Sr. Dev Advocate) covering all 6 domains, study tips, and Reactor discount code.<br><a href="https://www.youtube.com/watch?v=bgj20o0kYKg" target="_blank">Watch on YouTube</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Microsoft Reactor Deep Dive — Key Takeaways</h2>
+    <p>Based on Ari Levigny's (GitHub Sr. Developer Advocate) 1-hour exam walkthrough. These are direct quotes and emphasis points from the video.</p>
+
+    <div class="callout tip">
+      <p><strong>Core mantra — "Trust but verify":</strong> "Evaluate the work by the standards of the workflow, not by the novelty of the author. The human and the policy accept the agent's proposals." Agents propose, humans and rulesets decide what gets merged.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Plan &rarr; Act &rarr; Evaluate is the heartbeat:</strong> Plan your architecture, let agents act within scoped tools, then evaluate via checks and scans. Feed the evidence back into the plan. It's a cycle, not a straight line.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Domain 2 is the bulk of the exam:</strong> Ari explicitly says "spend a lot of time on the Tooling module." Planning agents should be read-only (just read/search). Execution agents (coder, designer) get edit/execute. Always ask: what is the <strong>least privilege</strong> needed?</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Context rot / context drift is tested:</strong> When the context window gets too full, the model struggles and drifts from the main goal. Domain 3 tests your ability to manage memory expiration, pruning, and session resumption.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Multi-agent orchestration is a skill to learn for real work:</strong> "Not just for the exam." Orchestrator &rarr; Planner &rarr; Coder + Designer working in parallel on isolated branches. Each agent gets its own branch, proposes a PR, runs checks. Never merge to main directly.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Governance = least privilege + rulesets + CODEOWNERS + environment gates:</strong> Ari emphasizes "you got to understand what does least privilege mean." The agent operates in isolated branches with tightly scoped workflow permissions, branch policies, and rule sets. Required scans (CodeQL), human-in-the-loop via CODEOWNERS, and deployment approvals.</p>
+    </div>
+
+    <div class="callout warning">
+      <p><strong>Execution without validation = anti-pattern:</strong> "If an agent can bypass required checks or merge without reviews, the architecture loses its primary safety mechanisms." Always keep human review + status checks + rulesets between the agent and main.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Actions knowledge needed — but not deep YAML:</strong> You need to understand how agents <em>touch</em> GitHub Actions (evaluating workflows, fixing errors in workflows). You don't need to know every YAML key or action detail. High-level understanding is enough.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Beta exam counts — no retake needed at GA:</strong> If you pass the beta, you're grandfathered in. The beta is for Microsoft to collect feedback on ambiguous questions. Results take ~8 weeks. Certification valid ~2-3 years.</p>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Hands-on practice is how you learn:</strong> "Reading and videos are great, but hands-on practice really drives the point home." Do the GitHub Skills, run the Microsoft Learn modules, and use the exam sandbox (aka.ms/examdemo).</p>
     </div>
   </div>
 
